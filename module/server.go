@@ -1,40 +1,21 @@
 package module
 
 import (
-	module "github.com/ProjectAthenaa/sonic-core/protos"
-	"github.com/ProjectAthenaa/sonic-core/sonic/face"
-	"github.com/prometheus/common/log"
+	"context"
+	"github.com/ProjectAthenaa/sonic-core/protos/module"
 )
 
 type Server struct {
 	module.UnimplementedModuleServer
 }
 
-func (s Server) Task(server module.Module_TaskServer) error {
-	dt, err := server.Recv() //recv first data
-	if err != nil {
-		log.Error("first recv:", err)
-		return err
+func (s Server) Task(_ context.Context, data *module.Data) (*module.StartResponse, error) {
+	//v, _ := json.Marshal(data)
+	//fmt.Println(string(v))
+	task := NewTask(data)
+	if err := task.Start(data); err != nil {
+		return nil, err
 	}
 
-	//first data must be a init command
-	if dt.Command != module.COMMAND_START {
-		return face.ErrTaskNotInit
-	}
-	//must set profile or some data
-	if dt.Data == nil {
-		return face.ErrFirstTaskDataError
-	}
-	task := Task{}
-
-	task.Init(server)
-
-	//1.init and start
-	err = task.Start(dt.Data)
-	if err != nil {
-		return err
-	}
-
-	//2.listen commands
-	return task.Listen()
+	return &module.StartResponse{Started: true}, nil
 }

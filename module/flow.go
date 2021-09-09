@@ -2,90 +2,189 @@ package module
 
 import (
 	"fmt"
-	module "github.com/ProjectAthenaa/sonic-core/protos"
-	http "github.com/ProjectAthenaa/fasttls"
-	"io/ioutil"
-	"strings"
+	"github.com/ProjectAthenaa/sonic-core/protos/module"
 	"github.com/json-iterator/go"
+	"strings"
 )
 
-var(
+var (
 	json = jsoniter.ConfigFastest
 )
 
-func (tk *Task) ATC(){
-	req, err := http.NewRequest("POST", "https://www.walmart.com/api/v3/cart/guest/:CID/items", strings.NewReader(fmt.Sprintf(`{"offerId":"%s","quantity":1,"location":{"postalCode":"%s","city":"%s","state":"%s","isZipLocated":true},"shipMethodDefaultRule":"SHIP_RULE_1","storeIds":[%s]}`, tk.offerid, tk.Data.Profile.Shipping.ShippingAddress.ZIP, tk.Data.Profile.Shipping.ShippingAddress.City, tk.Data.Profile.Shipping.ShippingAddress.ZIP, strings.Join(tk.storeids, ","))))
-	if err != nil{
+func (tk *Task) ATC() {
+	req, err := tk.NewRequest("POST", "https://www.walmart.com/api/v3/cart/guest/:CID/items", []byte(fmt.Sprintf(`{"offerId":"%s","quantity":1,"location":{"postalCode":"%s","city":"%s","state":"%s","isZipLocated":true},"shipMethodDefaultRule":"SHIP_RULE_1","storeIds":[%s]}`, tk.offerid, tk.Data.Profile.Shipping.ShippingAddress.ZIP, tk.Data.Profile.Shipping.ShippingAddress.City, tk.Data.Profile.Shipping.ShippingAddress.ZIP, strings.Join(tk.storeids, ","))))
+	if err != nil {
 		tk.SetStatus(module.STATUS_ERROR, "couldnt create atc request")
 		tk.Stop()
 		return
 	}
-	_, err := tk.Client.Do(req)
-	if err != nil{
+	req.Headers = tk.GenerateDefaultHeaders("https://www.walmart.com")
+
+	_, err = tk.Do(req)
+	if err != nil {
 		tk.SetStatus(module.STATUS_ERROR, "couldnt make atc request")
 		tk.Stop()
 		return
 	}
 }
 
-func (tk *Task) StoreLocator(){
-	req, err := http.NewRequest("PUT", "https://www.walmart.com/account/api/location", strings.NewReader(fmt.Sprintf(`{"postalCode":"%s","responseGroup":"STOREMETAPLUS","includePickUpLocation":true,"persistLocation":true,"clientName":"Web-Checkout-ShippingAddress","storeMeta":true,"plus":true}`, tk.Data.Profile.Shipping.ShippingAddress.ZIP)))
-	if err != nil{
+func (tk *Task) StoreLocator() {
+	req, err := tk.NewRequest("PUT", "https://www.walmart.com/account/api/location", []byte(fmt.Sprintf(`{"postalCode":"%s","responseGroup":"STOREMETAPLUS","includePickUpLocation":true,"persistLocation":true,"clientName":"Web-Checkout-ShippingAddress","storeMeta":true,"plus":true}`, tk.Data.Profile.Shipping.ShippingAddress.ZIP)))
+	if err != nil {
 		tk.SetStatus(module.STATUS_ERROR, "couldnt create store location request")
 		tk.Stop()
 		return
 	}
-	res, err := tk.Client.Do(req)
-	if err != nil{
-		tk.SetStatus(module.STATUS_ERROR, "couldnt make store location request")
-		tk.Stop()
-		return
-	}
-	defer res.Body.Close()
+	req.Headers = tk.GenerateDefaultHeaders("https://www.walmart.com")
 
-	storesbody, err := ioutil.ReadAll(res.Body)
-	if err != nil{
-		tk.SetStatus(module.STATUS_ERROR, "couldnt read store location request")
+	res, err := tk.Do(req)
+	if err != nil {
+		tk.SetStatus(module.STATUS_ERROR, "couldnt make store location request")
 		tk.Stop()
 		return
 	}
 
 	var stores *Store
-	json.Unmarshal(storesbody, &stores)
+	json.Unmarshal(res.Body, &stores)
 	tk.stores = *stores
 
 }
 
-func (tk *Task) SubmitShipping(){
+func (tk *Task) SubmitShipping() {
 	var form string
-	if *tk.Data.Profile.Shipping.ShippingAddress.AddressLine2 != ""{
-		form = fmt.Sprintf(`{"addressLineOne":"%s","addressLineTwo":"%s","city":"%s","firstName":"%s","lastName":"%s","phone":"%s","email":"%s","postalCode":"%s","state":"%s","addressType":"RESIDENTIAL","changedFields":[],"storeList":[%s]}`, tk.Data.Profile.Shipping.ShippingAddress.AddressLine, tk.Data.Profile.Shipping.ShippingAddress.AddressLine2, tk.Data.Profile.Shipping.ShippingAddress.City, tk.Data.Profile.Shipping.FirstName, tk.Data.Profile.Shipping.LastName, tk.Data.Profile.Shipping.PhoneNumber, tk.Data.Profile.Email, tk.Data.Profile.Shipping.ShippingAddress.ZIP, tk.Data.Profile.Shipping.ShippingAddress.StateCode ,tk.FormatStores())
-	}else
-	{
-		form = fmt.Sprintf(`{"addressLineOne":"%s","city":"%s","firstName":"%s","lastName":"%s","phone":"%s","email":"%s","postalCode":"%s","state":"%s","addressType":"RESIDENTIAL","changedFields":[],"storeList":[%s]}`, tk.Data.Profile.Shipping.ShippingAddress.AddressLine, tk.Data.Profile.Shipping.ShippingAddress.City, tk.Data.Profile.Shipping.FirstName, tk.Data.Profile.Shipping.LastName, tk.Data.Profile.Shipping.PhoneNumber, tk.Data.Profile.Email, tk.Data.Profile.Shipping.ShippingAddress.ZIP, tk.Data.Profile.Shipping.ShippingAddress.StateCode ,tk.FormatStores())
+	if *tk.Data.Profile.Shipping.ShippingAddress.AddressLine2 != "" {
+		form = fmt.Sprintf(`{"addressLineOne":"%s","addressLineTwo":"%s","city":"%s","firstName":"%s","lastName":"%s","phone":"%s","email":"%s","postalCode":"%s","state":"%s","addressType":"RESIDENTIAL","changedFields":[],"storeList":[%s]}`, tk.Data.Profile.Shipping.ShippingAddress.AddressLine, tk.Data.Profile.Shipping.ShippingAddress.AddressLine2, tk.Data.Profile.Shipping.ShippingAddress.City, tk.Data.Profile.Shipping.FirstName, tk.Data.Profile.Shipping.LastName, tk.Data.Profile.Shipping.PhoneNumber, tk.Data.Profile.Email, tk.Data.Profile.Shipping.ShippingAddress.ZIP, tk.Data.Profile.Shipping.ShippingAddress.StateCode, tk.FormatStores())
+	} else {
+		form = fmt.Sprintf(`{"addressLineOne":"%s","city":"%s","firstName":"%s","lastName":"%s","phone":"%s","email":"%s","postalCode":"%s","state":"%s","addressType":"RESIDENTIAL","changedFields":[],"storeList":[%s]}`, tk.Data.Profile.Shipping.ShippingAddress.AddressLine, tk.Data.Profile.Shipping.ShippingAddress.City, tk.Data.Profile.Shipping.FirstName, tk.Data.Profile.Shipping.LastName, tk.Data.Profile.Shipping.PhoneNumber, tk.Data.Profile.Email, tk.Data.Profile.Shipping.ShippingAddress.ZIP, tk.Data.Profile.Shipping.ShippingAddress.StateCode, tk.FormatStores())
 	}
-	req, err := http.NewRequest("POST", "https://www.walmart.com/api/checkout/v3/contract/:PCID/shipping-address", strings.NewReader(form))
-	if err != nil{
+	req, err := tk.NewRequest("POST", "https://www.walmart.com/api/checkout/v3/contract/:PCID/shipping-address", []byte(form))
+	if err != nil {
 		tk.SetStatus(module.STATUS_ERROR, "couldnt create store location request")
 		tk.Stop()
 		return
 	}
-	res, err := tk.Client.Do(req)
-	if err != nil{
-		tk.SetStatus(module.STATUS_ERROR, "couldnt make store location request")
-		tk.Stop()
-		return
-	}
-	defer res.Body.Close()
+	req.Headers = tk.GenerateDefaultHeaders("https://www.walmart.com")
 
-	shippingbody, err := ioutil.ReadAll(res.Body)
-	if err != nil{
-		tk.SetStatus(module.STATUS_ERROR, "couldnt read store location request")
+	_, err = tk.Do(req)
+	if err != nil {
+		tk.SetStatus(module.STATUS_ERROR, "couldnt make store location request")
 		tk.Stop()
 		return
 	}
 }
 
-//:CID/credit-card
-//:PCID/payment
-//:PCID/order
+//do encryption
+func (tk *Task) SubmitCard(){
+	formdata, err := json.Marshal(CreditCardForm{
+		EncryptedPan:   "",
+		EncryptedCvv:   "",
+		IntegrityCheck: "",
+		KeyID:          "",
+		Phase:          "",
+		State:          "",
+		City:           "",
+		AddressType:    "",
+		PostalCode:     "",
+		AddressLineOne: "",
+		AddressLineTwo: "",
+		FirstName:      "",
+		LastName:       "",
+		ExpiryMonth:    "",
+		ExpiryYear:     "",
+		Phone:          "",
+		CardType:       "",
+		IsGuest:        false,
+	})
+	if err != nil{
+		tk.SetStatus(module.STATUS_ERROR, "couldnt serialize card form")
+		tk.Stop()
+		return
+	}
+
+	req, err := tk.NewRequest("POST", "https://www.walmart.com/api/checkout-customer/:CID/credit-card", formdata)
+	if err != nil{
+		tk.SetStatus(module.STATUS_ERROR, "couldnt create credit card req")
+		tk.Stop()
+		return
+	}
+	req.Headers = tk.GenerateDefaultHeaders(`https://www.walmart.com/checkout/`)
+	_, err = tk.Do(req)
+	if err != nil{
+		tk.SetStatus(module.STATUS_ERROR, "couldnt make credit card req")
+		tk.Stop()
+		return
+	}
+}
+
+func (tk *Task) Payment(){
+	formdata, err := json.Marshal(Payment{
+		Payments:     nil,
+		CvvInSession: false,
+	})
+	if err != nil{
+		tk.SetStatus(module.STATUS_ERROR, "couldnt serialize payment form")
+		tk.Stop()
+		return
+	}
+	req, err := tk.NewRequest("POST", `https://www.walmart.com/api/checkout/v3/contract/:PCID/payment`, formdata)
+	if err != nil{
+		tk.SetStatus(module.STATUS_ERROR, "coudldnt create payment post")
+		tk.Stop()
+		return
+	}
+	req.Headers = tk.GenerateDefaultHeaders(`https://www.walmart.com/checkout/`)
+	_, err = tk.Do(req)
+	if err != nil{
+		tk.SetStatus(module.STATUS_ERROR, "couldnt make payment post")
+		tk.Stop()
+		return
+	}
+}
+
+func (tk *Task) OrderConfirm(){
+	formdata, err := json.Marshal(OrderConfirm{
+		CvvInSession:    false,
+		VoltagePayments: []map[string]string{
+			{"paymentType": "CREDITCARD",
+				"encryptedCvv":   "", //todo
+				"encryptedPan":   "", //todo
+				"integrityCheck": "", //todo
+				"keyId":          "",
+				"phase":          "0"},
+		},
+	})
+	if err != nil{
+		tk.SetStatus(module.STATUS_ERROR, "couldnt serialize order confirmation")
+		tk.Stop()
+		return
+	}
+	req, err := tk.NewRequest("PUT", `https://www.walmart.com/api/checkout/v3/contract/:PCID/order`, formdata)
+	if err != nil{
+		tk.SetStatus(module.STATUS_ERROR, "couldnt create confirmation post")
+		tk.Stop()
+		return
+	}
+	req.Headers = tk.GenerateDefaultHeaders("https://www.walmart.com/checkout/")
+
+	//{
+	//	"statusCode": 400,
+	//	"error": "Bad Request",
+	//	"message": "Your payment couldn't be authorized. Please check the card number, CVV and expiration date and try again, or use a different payment method.",
+	//	"validation": {
+	//		"source": "PAYLOAD",
+	//		"keys": ["PIH.ccdb.VISA.CREDITCARD.908962038.8972"]
+	//	},
+	//	"pangaeaErrors": ["400.CHECKOUT_SERVICE.513"],
+	//	"code": "payment_service_invalid_account_no",
+	//	"details": {
+	//		"paymentId": "ce8c9e2b-e008-4aee-b601-91f8198dee8e",
+	//		"paymentType": "CREDITCARD"
+	//	}
+	//}
+	res, err := tk.Do(req)
+	if err != nil{
+		tk.SetStatus(module.STATUS_ERROR, "could not read confirmation response")
+		tk.Stop()
+		return
+	}
+}
