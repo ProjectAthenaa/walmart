@@ -70,5 +70,5 @@ func (tk *Task) GenerateDefaultHeaders(referrer string) http.Headers {
 func (tk *Task) cardType()string{
 	card := creditcard.Card{Number: tk.Data.Profile.Billing.Number, Cvv: tk.Data.Profile.Billing.CVV, Month: tk.Data.Profile.Billing.ExpirationMonth, Year: "20" + tk.Data.Profile.Billing.ExpirationYear}
 	card.Method()
-	return card.Company.Long
+	return card.Company.Short
 }

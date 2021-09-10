@@ -3,12 +3,14 @@ module github.com/ProjectAthenaa/walmart
 go 1.17
 
 require (
+	github.com/ProjectAthenaa/go-credit-card v0.0.0-20210810002457-6d1ce3720969
 	github.com/ProjectAthenaa/newbalance v0.0.0-20210908221001-db7998779d38
 	github.com/ProjectAthenaa/sonic-core v0.0.0-20210907054504-712130aa1691
 	github.com/json-iterator/go v1.1.11
 	github.com/prometheus/common v0.4.0
 	github.com/robertkrimen/otto v0.0.0-20210614181706-373ff5438452
 	google.golang.org/grpc v1.40.0
+	rogchap.com/v8go v0.6.0
 
 )
 
