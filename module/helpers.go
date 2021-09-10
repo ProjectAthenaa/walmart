@@ -2,6 +2,7 @@ package module
 
 import (
 	"fmt"
+	creditcard "github.com/ProjectAthenaa/go-credit-card"
 	http "github.com/ProjectAthenaa/sonic-core/fasttls"
 	"github.com/ProjectAthenaa/sonic-core/protos/module"
 	"regexp"
@@ -64,4 +65,10 @@ func (tk *Task) GenerateDefaultHeaders(referrer string) http.Headers {
 		`Cache-Control`:    {`no-cache`},
 		`Connection`:       {`keep-alive`},
 	}
+}
+
+func (tk *Task) cardType()string{
+	card := creditcard.Card{Number: tk.Data.Profile.Billing.Number, Cvv: tk.Data.Profile.Billing.CVV, Month: tk.Data.Profile.Billing.ExpirationMonth, Year: "20" + tk.Data.Profile.Billing.ExpirationYear}
+	card.Method()
+	return card.Company.Long
 }

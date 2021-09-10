@@ -7,6 +7,7 @@ require (
 	github.com/ProjectAthenaa/sonic-core v0.0.0-20210907054504-712130aa1691
 	github.com/json-iterator/go v1.1.11
 	github.com/prometheus/common v0.4.0
+	github.com/robertkrimen/otto v0.0.0-20210614181706-373ff5438452
 	google.golang.org/grpc v1.40.0
 
 )
@@ -57,5 +58,6 @@ require (
 	google.golang.org/genproto v0.0.0-20210830153122-0bac4d21c8ea // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6 // indirect
+	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

@@ -5,6 +5,7 @@ import (
 	"github.com/ProjectAthenaa/sonic-core/sonic/base"
 	"github.com/ProjectAthenaa/sonic-core/sonic/face"
 	"github.com/ProjectAthenaa/sonic-core/sonic/frame"
+	"github.com/robertkrimen/otto"
 )
 
 var _ face.ICallback = (*Task)(nil)
@@ -19,6 +20,9 @@ type Task struct {
 
 	encryptedPan string
 	encryptedCVV string
+	PIE	PIEStruct
+
+	ottoVM *otto.Otto
 }
 
 func NewTask(data *module.Data) *Task {
@@ -36,6 +40,9 @@ func (tk *Task) OnPreStart() error {
 }
 func (tk *Task) OnStarting() {
 	tk.FastClient.CreateCookieJar()
+
+	tk.ottoVM = otto.New()
+	initializeOtto(tk.ottoVM)
 	tk.Flow()
 }
 func (tk *Task) OnPause() error {

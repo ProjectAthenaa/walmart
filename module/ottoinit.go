@@ -1,24 +1,29 @@
-const atob = require('atob');
-const ProtectPANandCVV = function (card, cvv, PIE) {
+package module
+
+import "github.com/robertkrimen/otto"
+
+//card, cvv, l, k, e
+func initializeOtto(ottovm *otto.Otto){
+	ottovm.Run(`function ProtectPANandCVV(card, cvv, PIELVAL, PIEKVAL, PIEEVAL){
     var a = distill(card),
         i = distill(cvv);
     if (a.length < 13 || a.length > 19 || i.length > 4 || 1 == i.length || 2 == i.length) return null;
-    var c = a.substr(0, PIE.L) + a.substring(a.length - PIE.E);
+    var c = a.substr(0, PIELVAL) + a.substring(a.length - PIEEVAL);
     var u = luhn(a),
-        s = a.substring(PIE.L + 1, a.length - PIE.E),
-        d = encrypt(s + i, c, PIE.K, 10), // need to decode encrypt
-        l = a.substr(0, PIE.L) + '0' + d.substr(0, d.length - i.length) + a.substring(a.length - PIE.E),
-        f = reformat(fixluhn(l, PIE.L, u), card),
+        s = a.substring(PIELVAL + 1, a.length - PIEEVAL),
+        d = encrypt(s + i, c, PIEKVAL, 10), // need to decode encrypt
+        l = a.substr(0, PIELVAL) + '0' + d.substr(0, d.length - i.length) + a.substring(a.length - PIEEVAL),
+        f = reformat(fixluhn(l, PIELVAL, u), card),
         p = reformat(d.substring(d.length - i.length), cvv);
-    return [f, p, integrity(PIE.K, f, p)];
+    return [f, p, integrity(PIEKVAL, f, p)];
 };
 
-const distill = (e) => {
+function distill(e){
     for (var t = '', r = 0; r < e.length; ++r) n.base10.indexOf(e.charAt(r)) >= 0 && (t += e.substr(r, 1));
     return t;
 };
 
-const luhn = (e) => {
+function luhn(e){
     for (var t = e.length - 1, n = 0; t >= 0; ) (n += parseInt(e.substr(t, 1), 10)), (t -= 2);
     for (t = e.length - 2; t >= 0; ) {
         var r = 2 * parseInt(e.substr(t, 1), 10);
@@ -27,7 +32,7 @@ const luhn = (e) => {
     return n % 10;
 };
 
-const fixluhn = (e, t, r) => {
+function fixluhn(e, t, r){
     var a = luhn(e);
     return (
         a < r ? (a += 10 - r) : (a -= r),
@@ -38,13 +43,13 @@ const fixluhn = (e, t, r) => {
     );
 };
 
-const reformat = (e, t) => {
+function reformat(e, t){
     for (var r = '', a = 0, i = 0; i < t.length; ++i)
         a < e.length && n.base10.indexOf(t.charAt(i)) >= 0 ? ((r += e.substr(a, 1)), ++a) : (r += t.substr(i, 1));
     return r;
 };
 
-const integrity = (e, t, n) => {
+function integrity(e, t, n){
     var o =
             String.fromCharCode(0) +
             String.fromCharCode(t.length) +
@@ -64,7 +69,7 @@ var n = {
     base62: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
 };
 
-const aes = function (e) {
+function aes(e){
     this._tables[0][0][0] || this._precompute();
     var t,
         n,
@@ -172,47 +177,47 @@ aes.prototype = {
     },
 };
 
-const HexToKey = (e) => {
+function HexToKey(e){
     return new aes(HexToWords(e));
 };
-const HexToWords = (e) => {
+function HexToWords(e){
     var t = new Array(4);
     if (32 != e.length) return null;
     for (var n = 0; n < 4; n++) t[n] = parseInt(e.substr(8 * n, 8), 16);
     return t;
 };
 
-const Hex = '0123456789abcdef';
+var Hex = '0123456789abcdef';
 
-const WordToHex = (e) => {
+function WordToHex(e){
     for (var t = 32, n = ''; t > 0; ) (t -= 4), (n += Hex.substr((e >>> t) & 15, 1));
     return n;
 };
 
-const MSBnotZero = (e) => {
+function MSBnotZero(e){
     return 2147483647 != (2147483647 | e);
 };
 
-const leftShift = (e) => {
+function leftShift(e){
     (e[0] = ((2147483647 & e[0]) << 1) | (e[1] >>> 31)),
         (e[1] = ((2147483647 & e[1]) << 1) | (e[2] >>> 31)),
         (e[2] = ((2147483647 & e[2]) << 1) | (e[3] >>> 31)),
         (e[3] = (2147483647 & e[3]) << 1);
 };
 
-const const_Rb = 135;
+var var_Rb = 135;
 
-const compute = (e, t) => {
+function compute(e, t){
     var n = [0, 0, 0, 0],
         r = e.encrypt(n),
         a = r[0];
-    leftShift(r), MSBnotZero(a) && (r[3] ^= const_Rb);
+    leftShift(r), MSBnotZero(a) && (r[3] ^= var_Rb);
     for (var o = 0; o < t.length; )
         (n[(o >> 2) & 3] ^= (255 & t.charCodeAt(o)) << (8 * (3 - (3 & o)))),
         0 == (15 & ++o) && o < t.length && (n = e.encrypt(n));
     return (
         (0 != o && 0 == (15 & o)) ||
-        ((a = r[0]), leftShift(r), MSBnotZero(a) && (r[3] ^= const_Rb), (n[(o >> 2) & 3] ^= 128 << (8 * (3 - (3 & o))))),
+        ((a = r[0]), leftShift(r), MSBnotZero(a) && (r[3] ^= var_Rb), (n[(o >> 2) & 3] ^= 128 << (8 * (3 - (3 & o))))),
             (n[0] ^= r[0]),
             (n[1] ^= r[1]),
             (n[2] ^= r[2]),
@@ -221,7 +226,7 @@ const compute = (e, t) => {
     );
 };
 
-const alphabet = [
+var alphabet = [
     '0',
     '1',
     '2',
@@ -259,7 +264,7 @@ const alphabet = [
     'Y',
     'Z',
 ];
-const precompF = (e, t, n, r) => {
+function precompF(e, t, n, r){
     var a = new Array(4),
         i = n.length;
     return (
@@ -271,12 +276,12 @@ const precompF = (e, t, n, r) => {
     );
 };
 
-const precompb = (e, t) => {
+function precompb(e, t){
     for (var n = Math.ceil(t / 2), r = 0, a = 1; n > 0; ) --n, (a *= e) >= 256 && ((a /= 256), ++r);
     return a > 1 && ++r, r;
 };
 
-const bnMultiply = (e, t, n) => {
+function bnMultiply(e, t, n){
     var r,
         a = 0;
     for (r = e.length - 1; r >= 0; --r) {
@@ -285,14 +290,14 @@ const bnMultiply = (e, t, n) => {
     }
 };
 
-const bnAdd = (e, t, n) => {
+function bnAdd(e, t, n){
     for (var r = e.length - 1, a = n; r >= 0 && a > 0; ) {
         var i = e[r] + a;
         (e[r] = i % t), (a = (i - e[r]) / t), --r;
     }
 };
 
-const convertRadix = (e, t, n, r, a) => {
+function convertRadix(e, t, n, r, a){
     var i,
         c = new Array(r);
     for (i = 0; i < r; ++i) c[i] = 0;
@@ -300,7 +305,7 @@ const convertRadix = (e, t, n, r, a) => {
     return c;
 };
 
-const cbcmacq = (e, t, n, r) => {
+function cbcmacq(e, t, n, r){
     for (var a = new Array(4), i = 0; i < 4; ++i) a[i] = e[i];
     for (var o = 0; 4 * o < n; ) {
         for (i = 0; i < 4; ++i)
@@ -311,7 +316,7 @@ const cbcmacq = (e, t, n, r) => {
     return a;
 };
 
-const F = function (e, t, n, r, a, i, c, u, s) {
+function F(e, t, n, r, a, i, c, u, s){
     var d = Math.ceil(s / 4) + 1,
         l = (n.length + s + 1) & 15;
     l > 0 && (l = 16 - l);
@@ -341,7 +346,7 @@ const F = function (e, t, n, r, a, i, c, u, s) {
     return convertRadix(v, 2 * d, 65536, i, u);
 };
 
-const DigitToVal = (e, t, n) => {
+function DigitToVal(e, t, n){
     var r = new Array(t);
     if (256 == n) {
         for (var a = 0; a < t; a++) r[a] = e.charCodeAt(a);
@@ -355,7 +360,7 @@ const DigitToVal = (e, t, n) => {
     return r;
 };
 
-const ValToDigit = (e, t) => {
+function ValToDigit(e, t){
     var n,
         r = '';
     if (256 == t) for (n = 0; n < e.length; n++) r += String.fromCharCode(e[n]);
@@ -363,7 +368,7 @@ const ValToDigit = (e, t) => {
     return r;
 };
 
-const encryptWithCipher = (e, t, n, r) => {
+function encryptWithCipher(e, t, n, r){
     var a = e.length,
         i = Math.floor(a / 2),
         c = precompF(n, a, t, r),
@@ -387,9 +392,8 @@ const encryptWithCipher = (e, t, n, r) => {
     }
     return ValToDigit(s, r) + ValToDigit(d, r);
 };
-const encrypt = (e, t, n, r) => {
+function encrypt(e, t, n, r){
     var i = HexToKey(n);
     return null == i ? '' : encryptWithCipher(e, t, i, r);
-};
-
-module.exports = ProtectPANandCVV;
+};`)
+}

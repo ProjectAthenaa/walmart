@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/ProjectAthenaa/sonic-core/protos/module"
 	"github.com/json-iterator/go"
+	"strconv"
 	"strings"
 )
 
@@ -73,27 +74,33 @@ func (tk *Task) SubmitShipping() {
 	}
 }
 
-//do encryption
+//get PIE
+
 func (tk *Task) SubmitCard(){
+	encarr := tk.EncryptPANandCVV()
+	var addrline2 string
+	if tk.Data.Profile.Shipping.ShippingAddress.AddressLine2 != nil{
+		addrline2 = *tk.Data.Profile.Shipping.ShippingAddress.AddressLine2
+	}
 	formdata, err := json.Marshal(CreditCardForm{
-		EncryptedPan:   "",
-		EncryptedCvv:   "",
-		IntegrityCheck: "",
-		KeyID:          "",
-		Phase:          "",
-		State:          "",
-		City:           "",
-		AddressType:    "",
-		PostalCode:     "",
-		AddressLineOne: "",
-		AddressLineTwo: "",
-		FirstName:      "",
-		LastName:       "",
-		ExpiryMonth:    "",
-		ExpiryYear:     "",
-		Phone:          "",
-		CardType:       "",
-		IsGuest:        false,
+		EncryptedPan:   encarr[0],
+		EncryptedCvv:   encarr[1],
+		IntegrityCheck: encarr[2],
+		KeyID:          tk.PIE.key_id,
+		Phase:          strconv.Itoa(tk.PIE.phase),
+		State:          tk.Data.Profile.Shipping.ShippingAddress.State,
+		City:           tk.Data.Profile.Shipping.ShippingAddress.City,
+		AddressType:    "RESIDENTIAL",
+		PostalCode:     tk.Data.Profile.Shipping.ShippingAddress.ZIP,
+		AddressLineOne: tk.Data.Profile.Shipping.ShippingAddress.AddressLine,
+		AddressLineTwo: addrline2,
+		FirstName:      tk.Data.Profile.Shipping.FirstName,
+		LastName:       tk.Data.Profile.Shipping.LastName,
+		ExpiryMonth:    tk.Data.Profile.Billing.ExpirationMonth,
+		ExpiryYear:     tk.Data.Profile.Billing.ExpirationYear,
+		Phone:          tk.Data.Profile.Shipping.PhoneNumber,
+		CardType:       tk.cardType(),
+		IsGuest:        true,
 	})
 	if err != nil{
 		tk.SetStatus(module.STATUS_ERROR, "couldnt serialize card form")
@@ -181,7 +188,8 @@ func (tk *Task) OrderConfirm(){
 	//		"paymentType": "CREDITCARD"
 	//	}
 	//}
-	res, err := tk.Do(req)
+
+	_, err = tk.Do(req)
 	if err != nil{
 		tk.SetStatus(module.STATUS_ERROR, "could not read confirmation response")
 		tk.Stop()
