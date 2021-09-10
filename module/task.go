@@ -16,6 +16,9 @@ type Task struct {
 	offerid  string
 	storeids []string
 	stores   Store
+
+	encryptedPan string
+	encryptedCVV string
 }
 
 func NewTask(data *module.Data) *Task {
