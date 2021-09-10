@@ -381,12 +381,6 @@ func initEncryption(L, E, K string) string {
 	return data
 }
 
-type PIE struct {
-	L int
-	E int
-	K string
-}
-
 var vm, _ = v8go.NewIsolate()
 
 func EncryptData(cardtype, cvv string, boolVal bool, pieL, pieE int, pieK string) ([]string, error) {
