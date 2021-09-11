@@ -5,7 +5,6 @@ import (
 	"github.com/ProjectAthenaa/sonic-core/sonic/base"
 	"github.com/ProjectAthenaa/sonic-core/sonic/face"
 	"github.com/ProjectAthenaa/sonic-core/sonic/frame"
-	"github.com/robertkrimen/otto"
 )
 
 var _ face.ICallback = (*Task)(nil)
@@ -13,7 +12,6 @@ var _ face.ICallback = (*Task)(nil)
 type Task struct {
 	*base.BTask
 	url      string
-	pid      string
 	offerid  string
 	storeids []string
 	stores   Store
@@ -21,8 +19,6 @@ type Task struct {
 	encryptedPan string
 	encryptedCVV string
 	PIE	PIEStruct
-
-	ottoVM *otto.Otto
 }
 
 func NewTask(data *module.Data) *Task {
@@ -40,9 +36,6 @@ func (tk *Task) OnPreStart() error {
 }
 func (tk *Task) OnStarting() {
 	tk.FastClient.CreateCookieJar()
-
-	tk.ottoVM = otto.New()
-	initializeOtto(tk.ottoVM)
 	tk.Flow()
 }
 func (tk *Task) OnPause() error {
@@ -63,12 +56,19 @@ func (tk *Task) Flow() {
 
 	tk.SetStatus(module.STATUS_MONITORING)
 	monitorData := <- pubsub.Chan(tk.Ctx)
-	tk.pid = monitorData["pid"].(string)
+	tk.offerid = monitorData["offerid"].(string)
 	pubsub.Close()
 
 	tk.SetStatus(module.STATUS_PRODUCT_FOUND)
 
 	funcarr := []func(){
+		tk.ATC,
+		tk.StoreLocator,
+		tk.SubmitShipping,
+		tk.GetPIEVals,
+		tk.SubmitCard,
+		tk.Payment,
+		tk.OrderConfirm,
 	}
 
 	for _, f := range funcarr {

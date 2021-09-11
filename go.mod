@@ -4,11 +4,10 @@ go 1.17
 
 require (
 	github.com/ProjectAthenaa/go-credit-card v0.0.0-20210810002457-6d1ce3720969
-	github.com/ProjectAthenaa/newbalance v0.0.0-20210908221001-db7998779d38
-	github.com/ProjectAthenaa/sonic-core v0.0.0-20210907054504-712130aa1691
+	github.com/ProjectAthenaa/sonic-core v0.0.0-20210910215629-6989f7770a6a
+	github.com/google/uuid v1.3.0
 	github.com/json-iterator/go v1.1.11
 	github.com/prometheus/common v0.4.0
-	github.com/robertkrimen/otto v0.0.0-20210614181706-373ff5438452
 	google.golang.org/grpc v1.40.0
 	rogchap.com/v8go v0.6.0
 
@@ -17,7 +16,7 @@ require (
 require (
 	entgo.io/contrib v0.1.0 // indirect
 	entgo.io/ent v0.9.1 // indirect
-	github.com/99designs/gqlgen v0.13.0 // indirect
+	github.com/99designs/gqlgen v0.14.0 // indirect
 	github.com/DataDog/zstd v1.4.8 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
@@ -31,21 +30,20 @@ require (
 	github.com/go-openapi/inflect v0.19.0 // indirect
 	github.com/go-redis/redis/v8 v8.11.3 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/graphql-go/graphql v0.8.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/klauspost/compress v1.13.4 // indirect
-	github.com/lib/pq v1.10.2 // indirect
+	github.com/lib/pq v1.10.3 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
-	github.com/thoas/go-funk v0.9.0 // indirect
+	github.com/thoas/go-funk v0.9.1 // indirect
 	github.com/useflyent/fhttp v0.0.0-20210801005649-f160dd923789 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fastrand v1.0.0 // indirect
-	github.com/vektah/gqlparser/v2 v2.1.0 // indirect
+	github.com/vektah/gqlparser/v2 v2.2.0 // indirect
 	github.com/viney-shih/go-lock v1.1.1 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.3.4 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
@@ -57,9 +55,8 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.5 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
-	google.golang.org/genproto v0.0.0-20210830153122-0bac4d21c8ea // indirect
+	google.golang.org/genproto v0.0.0-20210909211513-a8c4777a87af // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6 // indirect
-	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

@@ -133,7 +133,6 @@ func (tk *Task) GetPIEVals(){
 }
 
 func (tk *Task) SubmitCard(){
-
 	encarr, err := encryption.EncryptData(tk.cardType(), tk.Data.Profile.Billing.CVV, true, tk.PIE.L, tk.PIE.E, tk.PIE.K)
 	var addrline2 string
 	if tk.Data.Profile.Shipping.ShippingAddress.AddressLine2 != nil{
