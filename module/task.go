@@ -18,7 +18,12 @@ type Task struct {
 
 	encryptedPan string
 	encryptedCVV string
-	PIE	PIEStruct
+	PIE          PIEStruct
+
+	px struct {
+		Response []byte
+		RSC      int32
+	}
 }
 
 func NewTask(data *module.Data) *Task {
@@ -36,6 +41,7 @@ func (tk *Task) OnPreStart() error {
 }
 func (tk *Task) OnStarting() {
 	tk.FastClient.CreateCookieJar()
+
 	tk.Flow()
 }
 func (tk *Task) OnPause() error {
@@ -43,19 +49,18 @@ func (tk *Task) OnPause() error {
 }
 func (tk *Task) OnStopping() {
 	tk.FastClient.Destroy()
-	//panic("")
 	return
 }
 
 func (tk *Task) Flow() {
 	pubsub, err := frame.SubscribeToChannel(tk.Data.Channels.MonitorChannel)
-	if err != nil{
+	if err != nil {
 		tk.Stop()
 		return
 	}
 
 	tk.SetStatus(module.STATUS_MONITORING)
-	monitorData := <- pubsub.Chan(tk.Ctx)
+	monitorData := <-pubsub.Chan(tk.Ctx)
 	tk.offerid = monitorData["offerid"].(string)
 	pubsub.Close()
 

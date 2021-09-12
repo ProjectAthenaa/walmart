@@ -5,6 +5,7 @@ import (
 	creditcard "github.com/ProjectAthenaa/go-credit-card"
 	http "github.com/ProjectAthenaa/sonic-core/fasttls"
 	"github.com/ProjectAthenaa/sonic-core/protos/module"
+	"github.com/prometheus/common/log"
 	"regexp"
 	"strings"
 )
@@ -71,4 +72,21 @@ func (tk *Task) cardType()string{
 	card := creditcard.Card{Number: tk.Data.Profile.Billing.Number, Cvv: tk.Data.Profile.Billing.CVV, Month: tk.Data.Profile.Billing.ExpirationMonth, Year: "20" + tk.Data.Profile.Billing.ExpirationYear}
 	card.Method()
 	return card.Company.Short
+}
+
+func (tk *Task) SendPX(payload []byte) []byte {
+	req, err := tk.NewRequest("POST", "https://collector-pxu6b0qd2s.px-cloud.net/api/v2/collector", payload)
+	if err != nil {
+		log.Info("couldnt create post px")
+		return nil
+	}
+	req.Headers = tk.GenerateDefaultHeaders("https://www.walmart.com")
+
+	res, err := tk.Do(req)
+	if err != nil {
+		log.Info("couldnt post px")
+		return nil
+	}
+
+	return res.Body
 }

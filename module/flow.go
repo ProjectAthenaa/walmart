@@ -20,6 +20,27 @@ var (
 	phaseRe = regexp.MustCompile(`PIE\.phase = (\d+);`)
 )
 
+func (tk *Task) Homepage(){
+	req, err := tk.NewRequest("GET", "https://www.walmart.com/", nil)
+	if err != nil {
+		tk.SetStatus(module.STATUS_ERROR, "couldnt create homepage request")
+		tk.Stop()
+		return
+	}
+	req.Headers = tk.GenerateDefaultHeaders("https://www.walmart.com")
+
+	res, err := tk.Do(req)
+	if err != nil {
+		tk.SetStatus(module.STATUS_ERROR, "couldnt make homepage request")
+		tk.Stop()
+		return
+	}
+
+	if res.StatusCode != 307{
+		tk.PXHoldCaptcha(res.Headers["Location"][0])
+	}
+}
+
 func (tk *Task) ATC() {
 	req, err := tk.NewRequest("POST", "https://www.walmart.com/api/v3/cart/guest/:CID/items", []byte(fmt.Sprintf(`{"offerId":"%s","quantity":1,"location":{"postalCode":"%s","city":"%s","state":"%s","isZipLocated":true},"shipMethodDefaultRule":"SHIP_RULE_1","storeIds":[%s]}`, tk.offerid, tk.Data.Profile.Shipping.ShippingAddress.ZIP, tk.Data.Profile.Shipping.ShippingAddress.City, tk.Data.Profile.Shipping.ShippingAddress.ZIP, strings.Join(tk.storeids, ","))))
 	if err != nil {

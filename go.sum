@@ -29,8 +29,8 @@ github.com/DataDog/zstd v1.4.8/go.mod h1:g4AWEaM3yOg3HYfnJ3YIawPnVdXJh9QME85blwS
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/ProjectAthenaa/go-credit-card v0.0.0-20210810002457-6d1ce3720969 h1:IwET51RwuwbfKwrb6qju+OFSfav7catneM0+fYvPHo0=
 github.com/ProjectAthenaa/go-credit-card v0.0.0-20210810002457-6d1ce3720969/go.mod h1:DQ8LEb8aZlIDqt2xfkHkd/urgJoYrzBPuJKJhFTctyo=
-github.com/ProjectAthenaa/sonic-core v0.0.0-20210910215629-6989f7770a6a h1:URBBm/C39e0y++W8bj4BQNvPPdWEsruE2za2MpbJlxU=
-github.com/ProjectAthenaa/sonic-core v0.0.0-20210910215629-6989f7770a6a/go.mod h1:ICqdychCVK8fQsE6BmXRFHDBerHy6okk/EoYwwhqPAY=
+github.com/ProjectAthenaa/sonic-core v0.0.0-20210911202934-d6fa8a3c679c h1:fx4JhZWgxFsw71eabJE40X9O4JPrsV44/4Cb3ckqPVU=
+github.com/ProjectAthenaa/sonic-core v0.0.0-20210911202934-d6fa8a3c679c/go.mod h1:ICqdychCVK8fQsE6BmXRFHDBerHy6okk/EoYwwhqPAY=
 github.com/agnivade/levenshtein v1.0.1/go.mod h1:CURSv5d9Uaml+FovSIICkLbAUZ9S4RqaHDIsdSBg7lM=
 github.com/agnivade/levenshtein v1.0.3/go.mod h1:4SFRZbbXWLF4MU1T9Qg0pGgH3Pjs+t6ie5efyrwRJXs=
 github.com/agnivade/levenshtein v1.1.0/go.mod h1:veldBMzWxcCG2ZvUTKD2kJNRdCk5hVbJomOvKkmgYbo=
