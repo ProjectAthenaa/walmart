@@ -16,15 +16,15 @@ func init() {
 		name = strings.Split(podName, "-")[0]
 	}
 
-	fieldKey := "LOOKUP_link"
+	fieldKey := "LOOKUP_PID"
 
 	Module = &sonic.Module{
 		Name: name,
 		Fields: []*sonic.ModuleField{
 			{
-				Validation: "https:\\/\\/www\\.walmart\\.com\\/p\\/.*\\/-\\/A-\\d+",
+				Validation: "\\d+",
 				Type:       sonic.FieldTypeText,
-				Label:      "Product Link",
+				Label:      "Product ID",
 				FieldKey:   &fieldKey,
 			},
 		},
