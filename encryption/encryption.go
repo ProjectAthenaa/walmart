@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-type pieStruct struct{
+type PIEStruct struct{
 	L int
 	E int
 	K string
@@ -14,7 +14,17 @@ type pieStruct struct{
 	Phase int
 }
 
-func ProtectPANandCVV(e, t string, r int, PIE pieStruct) []string{
+func EncrypData(cardtype, cvv string, encdec int, pieIn PIEStruct) []string{
+	var cc string
+	if cardtype == "amex"{
+		cc = "378282246310005"
+	}else{
+		cc = "4111111111111111"
+	}
+	return ProtectPANandCVV(cc, cvv, encdec, pieIn)
+}
+
+func ProtectPANandCVV(e, t string, r int, PIE PIEStruct) []string{
 	a := n.Distill(e)
 	i := n.Distill(t)
 	if len(a) < 13 || len(a) > 19 || len(i) > 4 || 1 == len(i) || 2 == len(i){
