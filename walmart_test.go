@@ -5,7 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ProjectAthenaa/sonic-core/protos/module"
+	"github.com/ProjectAthenaa/sonic-core/protos/monitor"
+	monitor_controller "github.com/ProjectAthenaa/sonic-core/protos/monitorController"
 	"github.com/ProjectAthenaa/sonic-core/sonic/core"
+	"github.com/ProjectAthenaa/sonic-core/sonic/database/ent/product"
 	"github.com/ProjectAthenaa/walmart/config"
 	module2 "github.com/ProjectAthenaa/walmart/module"
 	"github.com/google/uuid"
@@ -35,7 +38,7 @@ func init() {
 }
 
 func TestModule(t *testing.T) {
-	subToken, controlToken := uuid.NewString(), uuid.NewString()
+	subToken, controlToken, monitorChannel := uuid.NewString(), uuid.NewString(), uuid.NewString()
 
 	productlink := "866031087"
 
@@ -46,6 +49,8 @@ func TestModule(t *testing.T) {
 
 	ip := "localhost"
 	port := "8866"
+
+	core.Base.GetRedis("cache").Publish(context.Background(), fmt.Sprintf("proxies:%s", product.SiteWalmart), fmt.Sprintf(`%s:%s`, ip, port))
 
 	tk := &module.Data{
 		TaskID: uuid.NewString(),
@@ -102,6 +107,7 @@ func TestModule(t *testing.T) {
 		Channels: &module.Channels{
 			UpdatesChannel:  subToken,
 			CommandsChannel: controlToken,
+			MonitorChannel: monitorChannel,
 		},
 	}
 
@@ -112,9 +118,18 @@ func TestModule(t *testing.T) {
 	client := module.NewModuleClient(conn)
 	ctx, _ := context.WithDeadline(context.Background(), time.Now().Add(time.Second*5))
 
+	conn, err = grpc.Dial("localhost:4000", grpc.WithInsecure())
+	monitorClient := monitor.NewMonitorClient(conn)
+	monitorClient.Start(context.Background(), &monitor_controller.Task{
+		Site:         string(product.SiteWalmart),
+		Lookup:       &monitor_controller.Task_Other{Other: true},
+		RedisChannel: monitorChannel,
+		Metadata:     tk.Metadata,
+	})
+
 	t.Log("connecting to redis")
 	pubsub := core.Base.GetRedis("cache").Subscribe(ctx, fmt.Sprintf("tasks:updates:%s", subToken))
-	t.Log("connected to redis")
+	t.Log("connected to rediss")
 
 	_, err = client.Task(context.Background(), tk)
 	if err != nil {
@@ -126,18 +141,18 @@ func TestModule(t *testing.T) {
 	for msg := range pubsub.Channel() {
 		var data module.Status
 		_ = json.Unmarshal([]byte(msg.Payload), &data)
-		fmt.Println(data.Status, data.Information["message"])
+		t.Log(data.Status, data.Information["message"])
 
 		if data.Status == module.STATUS_PRODUCT_FOUND {
 			start = time.Now()
 		}
 
 		if data.Status == module.STATUS_CHECKED_OUT {
-			fmt.Println(msg.Payload)
+			t.Log(msg.Payload)
 		}
 
 		if data.Status == module.STATUS_STOPPED {
-			fmt.Println(time.Since(start))
+			t.Log(time.Since(start))
 			return
 		}
 	}

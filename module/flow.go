@@ -5,6 +5,7 @@ import (
 	"github.com/ProjectAthenaa/sonic-core/protos/module"
 	"github.com/ProjectAthenaa/walmart/encryption"
 	"github.com/json-iterator/go"
+	"github.com/prometheus/common/log"
 	"regexp"
 	"strconv"
 	"strings"
@@ -31,7 +32,8 @@ func (tk *Task) Homepage(){
 
 	res, err := tk.Do(req)
 	if err != nil {
-		tk.SetStatus(module.STATUS_ERROR, "couldnt make homepage request")
+		log.Info(err)
+		tk.SetStatus(module.STATUS_ERROR, "couldn't make homepage request")
 		tk.Stop()
 		return
 	}

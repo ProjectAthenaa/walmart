@@ -5,6 +5,7 @@ import (
 	"github.com/ProjectAthenaa/sonic-core/sonic/base"
 	"github.com/ProjectAthenaa/sonic-core/sonic/face"
 	"github.com/ProjectAthenaa/sonic-core/sonic/frame"
+	"github.com/prometheus/common/log"
 )
 
 var _ face.ICallback = (*Task)(nil)
@@ -40,8 +41,8 @@ func (tk *Task) OnPreStart() error {
 	return nil
 }
 func (tk *Task) OnStarting() {
+	log.Info("onstarting")
 	tk.FastClient.CreateCookieJar()
-
 	tk.Flow()
 }
 func (tk *Task) OnPause() error {
@@ -55,6 +56,8 @@ func (tk *Task) OnStopping() {
 func (tk *Task) Flow() {
 	pubsub, err := frame.SubscribeToChannel(tk.Data.Channels.MonitorChannel)
 	if err != nil {
+		log.Info(err)
+		tk.SetStatus(module.STATUS_ERROR, "monitor err")
 		tk.Stop()
 		return
 	}
@@ -67,6 +70,7 @@ func (tk *Task) Flow() {
 	tk.SetStatus(module.STATUS_PRODUCT_FOUND)
 
 	funcarr := []func(){
+		tk.Homepage,
 		tk.ATC,
 		tk.StoreLocator,
 		tk.SubmitShipping,
