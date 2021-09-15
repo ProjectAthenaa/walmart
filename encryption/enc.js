@@ -46,7 +46,7 @@ ProtectPANandCVV = function(e, t, r) {
 var n = {};
 n.base10 = "0123456789",
 n.base62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
-luhn = function(e) {
+n.luhn = function(e) {
     for (var t = e.length - 1, n = 0; t >= 0; ) {
         n += parseInt(e.substr(t, 1), 10);
         t -= 2;
@@ -62,8 +62,8 @@ luhn = function(e) {
     }
     return n % 10
 }
-fixluhn = function(e, t, r) {
-    var a = luhn(e);
+n.fixluhn = function(e, t, r) {
+    var a = n.luhn(e);
     if(a < r){
         a += 10 - r
     }else {
@@ -85,7 +85,7 @@ fixluhn = function(e, t, r) {
         return e
     }
 }
-distill = function(e) {
+n.distill = function(e) {
     for (var t = "", r = 0; r < e.length; ++r) {
         if(n.base10.indexOf(e.charAt(r)) >= 0 ) {
             (t += e.substr(r, 1));
@@ -93,7 +93,7 @@ distill = function(e) {
     }
     return t
 }
-reformat = function(e, t) {
+n.reformat = function(e, t) {
     for (var r = "", a = 0, i = 0; i < t.length; ++i) {
         if(a < e.length && n.base10.indexOf(t.charAt(i)) >= 0) {
             r += e.substr(a, 1);
@@ -104,7 +104,7 @@ reformat = function(e, t) {
     }
     return r
 }
-integrity = function(e, t, n) {
+n.integrity = function(e, t, n) {
     var o = String.fromCharCode(0) + String.fromCharCode(t.length) + t + String.fromCharCode(0) + String.fromCharCode(n.length) + n;
     var c = a.HexToWords(e);
     c[3] ^= 1;
@@ -147,24 +147,47 @@ r.cipher.aes = function(e) {
     }
     for (n = 0; t; n++, t--) {
         a = i[3 & n ? t : t - 4];
-        o[n] = t <= 4 || n < 4 ? a : u[0][c[a >>> 24]] ^ u[1][c[a >> 16 & 255]] ^ u[2][c[a >> 8 & 255]] ^ u[3][c[255 & a]]
+        if(t <= 4 || n < 4){
+            o[n] =  a
+        }else
+        {
+            o[n] = u[0][c[a >>> 24]] ^ u[1][c[a >> 16 & 255]] ^ u[2][c[a >> 8 & 255]] ^ u[3][c[255 & a]]
+        }
     }
 };
 r.cipher.aes.prototype = {
     encrypt: function(e) {
-        return this._crypt(e, 0)
+        console.log(e)
+        let res = this._crypt(e, 0)
+        console.log(res)
+        return res
     },
     _tables: [[[], [], [], [], []], [[], [], [], [], []]],
     _precompute: function() {
-        var e, t, n, r, a, i, o, c, u = this._tables[0], s = this._tables[1], d = u[4], l = s[4], f = [], p = [];
+        var e, t, n, r, a, i, o, c, u = this._tables[0];
+        var s = this._tables[1];
+        var d = u[4];
+        var l = s[4];
+        var f = [];
+        var p = [];
         for (e = 0; e < 256; e++) {
             p[(f[e] = e << 1 ^ 283 * (e >> 7)) ^ e] = e;
         }
-        for (t = n = 0; !d[t]; t ^= 0 == r ? 1 : r, n = 0 == p[n] ? 1 : p[n]) {
-            for (i = (i = n ^ n << 1 ^ n << 2 ^ n << 3 ^ n << 4) >> 8 ^ 255 & i ^ 99, d[t] = i, l[i] = t, c = 16843009 * f[a = f[r = f[t]]] ^ 65537 * a ^ 257 * r ^ 16843008 * t, o = 257 * f[i] ^ 16843008 * i, e = 0; e < 4; e++) {
-                u[e][t] = o = o << 24 ^ o >>> 8;
-                s[e][i] = c = c << 24 ^ c >>> 8;
+        for (t = n = 0; !d[t];) {
+            i = n ^ n << 1 ^ n << 2 ^ n << 3 ^ n << 4;
+            i = i >> 8 ^ 255 & i ^ 99;
+            d[t] = i;
+            l[i] = t;
+            c = 16843009 * f[a = f[r = f[t]]] ^ 65537 * a ^ 257 * r ^ 16843008 * t;
+            o = 257 * f[i] ^ 16843008 * i;
+            for (e = 0; e < 4; e++) {
+                o = o << 24 ^ o >>> 8;
+                u[e][t] = o
+                c = c << 24 ^ c >>> 8;
+                s[e][i] = c
             }
+            t ^= 0 == r ? 1 : r
+            n = 0 == p[n] ? 1 : p[n]
         }
         for (e = 0; e < 5; e++) {
             u[e] = u[e].slice(0);
@@ -190,7 +213,10 @@ r.cipher.aes.prototype = {
         var _ = E[2];
         var v = E[3];
         var y = E[4];
+        console.log("m0", m)
+        // console.log(u,s,d,l)
         for (o = 0; o < f; o++) {
+            console.log(u,s,d,l)
             n = b[u >>> 24] ^ h[s >> 16 & 255] ^ _[d >> 8 & 255] ^ v[255 & l] ^ c[p];
             a = b[s >>> 24] ^ h[d >> 16 & 255] ^ _[l >> 8 & 255] ^ v[255 & u] ^ c[p + 1];
             i = b[d >>> 24] ^ h[l >> 16 & 255] ^ _[u >> 8 & 255] ^ v[255 & s] ^ c[p + 2];
@@ -200,14 +226,18 @@ r.cipher.aes.prototype = {
             s = a;
             d = i;
         }
+        console.log("m1",m)
         for (o = 0; o < 4; o++) {
-            m[t ? 3 & -o : o] = y[u >>> 24] << 24 ^ y[s >> 16 & 255] << 16 ^ y[d >> 8 & 255] << 8 ^ y[255 & l] ^ c[p++];
+            // console.log(u >>> 24 , s >> 16 & 255 , d >> 8 & 255, 255 & l, c[p])
+            m[t ? 3 & -o : o] = y[u >>> 24] << 24 ^ y[s >> 16 & 255] << 16 ^ y[d >> 8 & 255] << 8 ^ y[255 & l] ^ c[p];
+            p++
             n = u;
             u = s;
             s = d;
             d = l;
             l = n;
         }
+        console.log("m2",m)
         return m
     }
 };
@@ -264,13 +294,15 @@ compute = function(e, t) {
 var o = {
     alphabet: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"],
     precompF: function(e, t, n, r) {
+        // console.log(e, t, n, r)
         var a = new Array(4)
             , i = n.length;
-        return a[0] = 16908544 | r >> 16 & 255,
-            a[1] = (r >> 8 & 255) << 24 | (255 & r) << 16 | 2560 | 255 & Math.floor(t / 2),
-            a[2] = t,
-            a[3] = i,
-            e.encrypt(a)
+         a[0] = 16908544 | r >> 16 & 255;
+            a[1] = (r >> 8 & 255) << 24 | (255 & r) << 16 | 2560 | 255 & Math.floor(t / 2);
+            a[2] = t;
+            a[3] = i;
+            console.log(a)
+        return e.encrypt(a)
     },
     precompb: function(e, t) {
         for (var n = Math.ceil(t / 2), r = 0, a = 1; n > 0; ) {
@@ -343,6 +375,7 @@ var o = {
         }
         var b;
         var h = o.cbcmacq(c, p, p.length, e);
+        // console.log(c, p, p.length, e._key)
         var sb = h;
         var v = new Array(2 * d);
         for (f = 0; f < d; ++f) {
@@ -388,12 +421,12 @@ var o = {
         return r
     },
     encryptWithCipher: function(e, t, n, r) {
-        var a = e.length
-            , i = Math.floor(a / 2)
-            , c = o.precompF(n, a, t, r)
-            , u = o.precompb(r, a)
-            , s = o.DigitToVal(e, i, r)
-            , d = o.DigitToVal(e.substr(i), a - i, r);
+        var a = e.length;
+        var i = Math.floor(a / 2);
+        var c = o.precompF(n, a, t, r);
+        var u = o.precompb(r, a);
+        var s = o.DigitToVal(e, i, r);
+        var d = o.DigitToVal(e.substr(i), a - i, r);
         if ("" == s || "" == d)
             return "";
         for (var l = 0; l < 5; l++) {
@@ -420,6 +453,10 @@ var o = {
 }
 
 var PIE = {}
-PIE.L = L_VAL_HERE;
-PIE.E = E_VAL_HERE;
-PIE.K = "K_VAL_HERE";
+PIE.L = 6;
+PIE.E = 4;
+PIE.K = "50B46C729E19D39888B14B1E4623C381";
+PIE.phase = "51408751";
+PIE.key_id = 0;
+
+console.log(ProtectPANandCVV("4111111111111111","997",1))

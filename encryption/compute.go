@@ -7,9 +7,9 @@ func MSBnotZero(e int) bool{
 }
 
 func leftShift(e []int) []int{
-	e[0] = (2147483647 & e[0]) << 1 | jsUNum(e[1] >> 31)
-	e[1] = (2147483647 & e[1]) << 1 | jsUNum(e[2] >> 31)
-	e[2] = (2147483647 & e[2]) << 1 | jsUNum(e[3] >> 31)
+	e[0] = (2147483647 & e[0]) << 1 | jsUNum(jsUNum(e[1]) >> 31)
+	e[1] = (2147483647 & e[1]) << 1 | jsUNum(jsUNum(e[2]) >> 31)
+	e[2] = (2147483647 & e[2]) << 1 | jsUNum(jsUNum(e[3]) >> 31)
 	e[3] = (2147483647 & e[3]) << 1
 	return e
 }
@@ -24,10 +24,10 @@ func compute(e aes, t string) []int{
 	}
 	var o int
 	for o = 0; o < len(t); {
-		n[o >> 2 & 3] ^= jsNum((255 & t[o]) << jsNum(8 * (3 - (3 & o))))
+		n[o >> 2 & 3] ^= jsNum(int(255 & t[o]) << jsNum(8 * (3 - (3 & o))))
 		o++
-		if(0 == (15 & o)){
-			if(o < len(t)){
+		if 0 == (15 & o){
+			if o < len(t){
 				n = e.encrypt(n)
 			}
 		}

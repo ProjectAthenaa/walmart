@@ -1,6 +1,7 @@
 package encryption
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -9,14 +10,14 @@ import (
 var alphabet = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"}
 
 func precompF(e aes, t int, n string, r int) []int{
-	//a = new Array(4)
 	var a []int
 	i := len(n)
-	a[0] = 16908544 | r >> 16 & 255
-	a[1] = (r >> 8 & 255) << 24 | (255 & r) << 16 | 2560 | 255 & int(math.Floor(float64(t) / 2))
-	a[2] = t
-	a[3] = i
-	return e.encrypt(a)
+	a = append(a, jsNum(16908544 | ((r >> 16) & 255)))
+	a = append(a, (r >> 8 & 255) << 24 | (255 & r) << 16 | 2560 | 255 & int(math.Floor(float64(t) / 2)))
+	a = append(a, t)
+	a = append(a, i)
+	res := e.encrypt(a)
+	return res
 }
 func precompb(e, t int) int{
 	r := 0
@@ -59,7 +60,7 @@ func convertRadix(e []int, t, n, r, a int) []int{
 	//var c = new Array(r);
 	var c []int
 	for i = 0; i < r; i++{
-		c[i] = 0
+		c = append(c, 0)
 	}
 	for u := 0; u < t; u++{
 		c = bnMultiply(c, a, n);
@@ -70,12 +71,11 @@ func convertRadix(e []int, t, n, r, a int) []int{
 func cbcmacq(e, t []int, n int, r aes) []int{
 	var a []int
 	for i := 0; i < 4; i++{
-		a[i] = e[i]
+		a = append(a, e[i])
 	}
 	for o := 0; 4 * o < n; {
 		for i := 0; i < 4; i++{
-			//todo check if errors
-			a[i] = a[i] ^ (t[4 * (o + i)] << 24 | t[4 * (o + i) + 1] << 16 | t[4 * (o + i) + 2] << 8 | t[4 * (o + i) + 3])
+			a[i] = a[i] ^ jsNum(jsNum(t[4 * (o + i)] << 24 )| jsNum(t[4 * (o + i) + 1] << 16) | jsNum(t[4 * (o + i) + 2] << 8) | jsNum(t[4 * (o + i) + 3]))
 		}
 		a = r.encrypt(a)
 		o += 4
@@ -90,12 +90,14 @@ func F(e aes, t int, n string, r []int, a, i int, c []int, u int, s int) []int{
 	}
 	var f int
 	var p []int
-	//var p = new Array(len(n) + l + s + 1)
+	for sj := 0; sj < len(n) + l + s + 1; sj++{
+		p = append(p, 0)
+	}
 	for f = 0; f < len(n); f++{
-		p = append(p, int(n[f]))
+		p[f] = int(n[f])
 	}
 	for ; f < l + len(n); f++{
-		p = append(p, 0)
+		p[f] =  0
 	}
 	p[len(p) - s - 1] = t
 	m := convertRadix(r, a, u, s, 256)
@@ -106,18 +108,16 @@ func F(e aes, t int, n string, r []int, a, i int, c []int, u int, s int) []int{
 	h := cbcmacq(c, p, len(p), e)
 	sb := h
 	var v []int
-	//var v = new Array(2 * d);
 	for f = 0; f < d; f++ {
 		if f > 0 {
 			if 0 == (3 & f){
 				b = f >> 2 & 255
-				b |= b << 8 | b << 16 | b << 24
+				b |= jsNum(jsNum(jsNum(b) << 8) | jsNum(jsNum(b) << 16) | jsNum(jsNum(b) << 24))
 				sb = e.encrypt([]int{h[0] ^ b, h[1] ^ b, h[2] ^ b, h[3] ^ b})
 			}
 		}
-		// is >>> right
-		v[2 * f] = jsUNum(jsNum(sb[3 & f]) >> 16)
-		v[2 * f + 1] = 65535 & sb[3 & f]
+		v = append(v, jsUNum(jsUNum(sb[3 & f]) >> 16))
+		v = append(v, jsNum(65535 & sb[3 & f]))
 	}
 	return convertRadix(v, 2 * d, 65536, i, u)
 }
@@ -130,7 +130,7 @@ func DigitToVal(e string, t int, n int) []int{
 		return r
 	}
 	for i := 0; i < t; i++{
-		parsed, err := strconv.ParseInt(string(e[i]), n, 64)
+		parsed, err := strconv.ParseInt(fmt.Sprintf("%c",e[i]), n, 64)
 		if err != nil{
 			panic(err)
 		}
@@ -138,7 +138,7 @@ func DigitToVal(e string, t int, n int) []int{
 		if !(o < n) {
 			return nil
 		}
-		r[i] = o
+		r = append(r, o)
 	}
 	return r
 }
@@ -146,7 +146,7 @@ func ValToDigit(e []int, t int) string{
 	var r strings.Builder
 	if 256 == t{
 		for n := 0; n < len(e); n++{
-			r.WriteString(string(e[n]))
+			r.WriteString(fmt.Sprintf("%x",e[n]))
 		}
 	} else
 	{

@@ -21,7 +21,7 @@ func (obj *luhnObj) Luhn(e string) int{
 	t := len(e) - 1
 	var inc int
 	for inc = 0; t >= 0; {
-		addint, err := strconv.Atoi(string(e[t]))
+		addint, err := strconv.Atoi(fmt.Sprintf("%c",e[t]))
 		if err != nil{
 			log.Println("couldnt parse int")
 		}
@@ -29,7 +29,7 @@ func (obj *luhnObj) Luhn(e string) int{
 		t -= 2
 	}
 	for t = len(e) - 2; t >= 0;  {
-		r, err  := strconv.Atoi(string(e[t]))
+		r, err  := strconv.Atoi(fmt.Sprintf("%c",e[t]))
 		if err != nil{
 			log.Println("couldnt parse int")
 		}
@@ -71,8 +71,8 @@ func (obj *luhnObj) FixLuhn(e string, t, r int) string{
 func (obj *luhnObj) Distill(e string) string{
 	var t strings.Builder
 	for r := 0; r < len(e); r++{
-		if strings.Index(n.base10, string(e[r])) >= 0 {
-			t.WriteString(string(e[r]))
+		if strings.Index(n.base10, fmt.Sprintf("%c",e[r])) >= 0 {
+			t.WriteString(fmt.Sprintf("%c",e[r]))
 		}
 	}
 	return t.String()
@@ -82,11 +82,11 @@ func (obj *luhnObj) Reformat(e, t string) string{
 	var r strings.Builder
 	a := 0
 	for i := 0; i < len(t); i++{
-		if a < len(e) && strings.Index(n.base10, string(t[i])) >= 0 {
-			r.WriteString(string(e[a]))
+		if a < len(e) && strings.Index(n.base10, fmt.Sprintf("%c",t[i])) >= 0 {
+			r.WriteString(fmt.Sprintf("%c",e[a]))
 			a++
 		}else{
-			r.WriteString(string(t[i]))
+			r.WriteString(fmt.Sprintf("%c",t[i]))
 		}
 	}
 	return r.String()

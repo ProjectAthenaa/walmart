@@ -1,6 +1,7 @@
 package encryption
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 )
@@ -16,15 +17,15 @@ type pieStruct struct{
 func ProtectPANandCVV(e, t string, r int, PIE pieStruct) []string{
 	a := n.Distill(e)
 	i := n.Distill(t)
-	if (len(a) < 13 || len(a) > 19 || len(i) > 4 || 1 == len(i) || 2 == len(i)) {
+	if len(a) < 13 || len(a) > 19 || len(i) > 4 || 1 == len(i) || 2 == len(i){
 		return nil
 	}
 	c := a[:PIE.L] + a[len(a) - PIE.E:]
 	if 1 == r{
 		u := n.Luhn(a)
-		s := a[PIE.L + 1:(PIE.L + 1)+(len(a) - PIE.E)]
-		d := encrypt(s + i, c, PIE.K, 10);
-		l := a[:PIE.L] + "0" + d[:len(d) - len(i)] + a[:len(a) - PIE.E]
+		s := substr(a, PIE.L + 1, len(a) - PIE.E)
+		d := encrypt(s + i, c, PIE.K, 10)
+		l := a[:PIE.L] + "0" + d[:len(d) - len(i)] + a[len(a) - PIE.E:]
 		f := n.Reformat(n.FixLuhn(l, PIE.L, u), e)
 		p := n.Reformat(d[len(d) - len(i):], t)
 		return []string{f, p, n.Integrity(PIE.K, f, p)}
@@ -47,7 +48,7 @@ func ProtectPANandCVV(e, t string, r int, PIE pieStruct) []string{
 	//y := new Array(len(d));
 	var y []int
 	for m = 0; m < len(d); m++{
-		y[m], err = strconv.Atoi(string(d[m]))
+		y[m], err = strconv.Atoi(fmt.Sprintf("%c",d[m]))
 	}
 	var g = convertRadix(y, len(d), 10, E, 62);
 	g = bnMultiply(g, 62, 131072)
