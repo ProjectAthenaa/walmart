@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-const encrypt = `
+const oldencrypt = `
 ProtectPANandCVV = function(e, t, r) {
     var a = n.distill(e)
         , i = n.distill(t);
@@ -377,7 +377,7 @@ PIE.K = "K_VAL_HERE";
 `
 
 func initEncryption(L, E, K string) string {
-	data := strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(encrypt, "L_VAL_HERE", L), "E_VAL_HERE", E), "K_VAL_HERE", K)
+	data := strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(oldencrypt, "L_VAL_HERE", L), "E_VAL_HERE", E), "K_VAL_HERE", K)
 	return data
 }
 

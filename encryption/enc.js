@@ -23,14 +23,15 @@ ProtectPANandCVV = function(e, t, r) {
         y[m] = parseInt(d.substr(m, 1), 10);
     var g = o.convertRadix(y, d.length, 10, E, 62);
     o.bnMultiply(g, 62, 131072),
-        o.bnMultiply(g, 62, 65536),
-        o.bnAdd(g, 62, v),
+    o.bnMultiply(g, 62, 65536),
+    o.bnAdd(g, 62, v),
     1 == PIE.phase && o.bnAdd(g, 62, 4294967296);
     var O = "";
-    for (m = 0; m < E; ++m)
+    for (m = 0; m < E; ++m) {
         O += n.base62.substr(g[m], 1);
-    f = a.substr(0, PIE.L) + O.substr(0, E - 4) + a.substring(a.length - PIE.E),
-        p = O.substring(E - 4);
+    }
+    f = a.substr(0, PIE.L) + O.substr(0, E - 4) + a.substring(a.length - PIE.E);
+    p = O.substring(E - 4);
     return [f, p, n.integrity(PIE.K, f, p)]
 };
 
@@ -264,68 +265,89 @@ var o = {
             e.encrypt(a)
     },
     precompb: function(e, t) {
-        for (var n = Math.ceil(t / 2), r = 0, a = 1; n > 0; )
-            --n,
-            (a *= e) >= 256 && (a /= 256,
-                ++r);
-        return a > 1 && ++r,
-            r
+        for (var n = Math.ceil(t / 2), r = 0, a = 1; n > 0; ) {
+            --n;
+            if((a *= e) >= 256){
+                (a /= 256, ++r);
+            }
+        }
+        a > 1 && ++r
+        return r
     },
     bnMultiply: function(e, t, n) {
         var r, a = 0;
         for (r = e.length - 1; r >= 0; --r) {
             var i = e[r] * n + a;
-            e[r] = i % t,
-                a = (i - e[r]) / t
+            e[r] = i % t;
+            a = (i - e[r]) / t
         }
     },
     bnAdd: function(e, t, n) {
         for (var r = e.length - 1, a = n; r >= 0 && a > 0; ) {
             var i = e[r] + a;
-            e[r] = i % t,
-                a = (i - e[r]) / t,
-                --r
+            e[r] = i % t;
+            a = (i - e[r]) / t;
+            --r
         }
     },
     convertRadix: function(e, t, n, r, a) {
-        var i, c = new Array(r);
-        for (i = 0; i < r; ++i)
-            c[i] = 0;
-        for (var u = 0; u < t; ++u)
-            o.bnMultiply(c, a, n),
-                o.bnAdd(c, a, e[u]);
+        var i
+        var c = new Array(r);
+        for (i = 0; i < r; ++i) {
+            c[i] = 0
+        }
+        for (var u = 0; u < t; ++u) {
+            o.bnMultiply(c, a, n);
+            o.bnAdd(c, a, e[u]);
+        }
         return c
     },
     cbcmacq: function(e, t, n, r) {
-        for (var a = new Array(4), i = 0; i < 4; ++i)
+        for (var a = new Array(4), i = 0; i < 4; ++i) {
             a[i] = e[i];
+        }
         for (var o = 0; 4 * o < n; ) {
-            for (i = 0; i < 4; ++i)
-                a[i] = a[i] ^ (t[4 * (o + i)] << 24 | t[4 * (o + i) + 1] << 16 | t[4 * (o + i) + 2] << 8 | t[4 * (o + i) + 3]);
-            a = r.encrypt(a),
-                o += 4
+            for (i = 0; i < 4; ++i) {
+                a[i] = a[i] ^ (t[4 * (o + i)] << 24 | t[4 * (o + i) + 1] << 16 | t[4 * (o + i) + 2] << 8 | t[4 * (o + i) + 3])
+            }
+            a = r.encrypt(a);
+            o += 4
         }
         return a
     },
     F: function(e, t, n, r, a, i, c, u, s) {
-        var d = Math.ceil(s / 4) + 1
-            , l = n.length + s + 1 & 15;
-        l > 0 && (l = 16 - l);
-        var f, p = new Array(n.length + l + s + 1);
-        for (f = 0; f < n.length; f++)
-            p[f] = n.charCodeAt(f);
-        for (; f < l + n.length; f++)
-            p[f] = 0;
+        var d = Math.ceil(s / 4) + 1;
+        var l = n.length + s + 1 & 15;
+         if(l > 0){
+             l = 16 - l
+         }
+        var f
+        var p = new Array(n.length + l + s + 1);
+        for (f = 0; f < n.length; f++) {
+            p[f] = n.charCodeAt(f)
+        }
+        for (; f < l + n.length; f++) {
+            p[f] = 0
+        }
         p[p.length - s - 1] = t;
-        for (var m = o.convertRadix(r, a, u, s, 256), E = 0; E < s; E++)
-            p[p.length - s + E] = m[E];
-        var b, h = o.cbcmacq(c, p, p.length, e), _ = h, v = new Array(2 * d);
-        for (f = 0; f < d; ++f)
-            f > 0 && 0 == (3 & f) && (b = f >> 2 & 255,
-                b |= b << 8 | b << 16 | b << 24,
-                _ = e.encrypt([h[0] ^ b, h[1] ^ b, h[2] ^ b, h[3] ^ b])),
-                v[2 * f] = _[3 & f] >>> 16,
-                v[2 * f + 1] = 65535 & _[3 & f];
+        for (var m = o.convertRadix(r, a, u, s, 256), E = 0; E < s; E++) {
+            p[p.length - s + E] = m[E]
+        }
+        var b;
+        var h = o.cbcmacq(c, p, p.length, e);
+        var sb = h;
+        var v = new Array(2 * d);
+        for (f = 0; f < d; ++f) {
+            if(f > 0){
+                if (0 == (3 & f)) {
+                    b = f >> 2 & 255;
+                    b |= b << 8 | b << 16 | b << 24;
+                    sb = e.encrypt([h[0] ^ b, h[1] ^ b, h[2] ^ b, h[3] ^ b])
+                }
+            }
+            v[2 * f] = sb[3 & f] >>> 16;
+            v[2 * f + 1] = 65535 & sb[3 & f];
+        }
         return o.convertRadix(v, 2 * d, 65536, i, u)
     },
     DigitToVal: function(e, t, n) {
@@ -345,12 +367,16 @@ var o = {
     },
     ValToDigit: function(e, t) {
         var n, r = "";
-        if (256 == t)
-            for (n = 0; n < e.length; n++)
+        if (256 == t) {
+            for (n = 0; n < e.length; n++) {
                 r += String.fromCharCode(e[n]);
-        else
-            for (n = 0; n < e.length; n++)
+            }
+        }
+        else {
+            for (n = 0; n < e.length; n++) {
                 r += o.alphabet[e[n]];
+            }
+        }
         return r
     },
     encryptWithCipher: function(e, t, n, r) {
@@ -366,9 +392,7 @@ var o = {
             var f, p = o.F(n, 2 * l, t, d, d.length, s.length, c, r, u);
             f = 0;
             for (var m = s.length - 1; m >= 0; --m) {
-                (E = s[m] + p[m] + f) < r ? (s[m] = E,
-                    f = 0) : (s[m] = E - r,
-                    f = 1)
+                (E = s[m] + p[m] + f) < r ? (s[m] = E, f = 0) : (s[m] = E - r, f = 1)
             }
             p = o.F(n, 2 * l + 1, t, s, s.length, d.length, c, r, u);
             f = 0;
