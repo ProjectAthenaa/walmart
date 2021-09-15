@@ -17,15 +17,23 @@ ProtectPANandCVV = function(e, t, r) {
     if (0 != n.luhn(a))
         return null;
     s = a.substring(PIE.L + 1, a.length - PIE.E);
-    var m, E = 23 - PIE.L - PIE.E, b = s + i, h = Math.floor((E * Math.log(62) - 34 * Math.log(2)) / Math.log(10)) - b.length - 1, _ = "11111111111111111111111111111".substr(0, h) + 2 * i.length, v = (d = "1" + o.encrypt(_ + b, c, PIE.K, 10),
-        parseInt(PIE.key_id, 16)), y = new Array(d.length);
-    for (m = 0; m < d.length; ++m)
+    var m;
+    E = 23 - PIE.L - PIE.E;
+    b = s + i;
+    h = Math.floor((E * Math.log(62) - 34 * Math.log(2)) / Math.log(10)) - b.length - 1;
+    _ = "11111111111111111111111111111".substr(0, h) + 2 * i.length;
+    v = (d = "1" + o.encrypt(_ + b, c, PIE.K, 10), parseInt(PIE.key_id, 16));
+    y = new Array(d.length);
+    for (m = 0; m < d.length; ++m) {
         y[m] = parseInt(d.substr(m, 1), 10);
+    }
     var g = o.convertRadix(y, d.length, 10, E, 62);
-    o.bnMultiply(g, 62, 131072),
-    o.bnMultiply(g, 62, 65536),
-    o.bnAdd(g, 62, v),
-    1 == PIE.phase && o.bnAdd(g, 62, 4294967296);
+    o.bnMultiply(g, 62, 131072);
+    o.bnMultiply(g, 62, 65536);
+    o.bnAdd(g, 62, v);
+    if(1 == PIE.phase){
+        o.bnAdd(g, 62, 4294967296);
+    }
     var O = "";
     for (m = 0; m < E; ++m) {
         O += n.base62.substr(g[m], 1);
