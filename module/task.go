@@ -91,8 +91,6 @@ func (tk *Task) Flow() {
 		tk.CreateCreditCart,
 		tk.UpdateTenderPlan,
 		tk.PlaceOrder,
-		tk.PurchaseContract,
-		tk.OrderConfirm,
 	}
 
 	for _, f := range funcarr {
