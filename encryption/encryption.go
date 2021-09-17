@@ -14,16 +14,6 @@ type PIEStruct struct{
 	Phase int
 }
 
-func EncrypData(cardtype, cvv string, encdec int, pieIn PIEStruct) []string{
-	var cc string
-	if cardtype == "amex"{
-		cc = "378282246310005"
-	}else{
-		cc = "4111111111111111"
-	}
-	return ProtectPANandCVV(cc, cvv, encdec, pieIn)
-}
-
 func ProtectPANandCVV(e, t string, r int, PIE PIEStruct) []string{
 	a := n.Distill(e)
 	i := n.Distill(t)

@@ -6,7 +6,7 @@ import (
 )
 
 func TestEncryption(t *testing.T){
-	log.Println(ProtectPANandCVV("4111111111111111","997",1, pieStruct{
+	log.Println(ProtectPANandCVV("4111111111111111","997",1, PIEStruct{
 		L:      6,
 		E:      4,
 		K:      "50B46C729E19D39888B14B1E4623C381",
