@@ -55,7 +55,8 @@ func (tk *Task) OnPreStart() error {
 func (tk *Task) OnStarting() {
 	tk.FastClient.CreateCookieJar()
 	tk.accountlock = &sync.Mutex{}
-
+	tk.PXInit()
+	tk.PXEvent()
 	tk.Flow()
 }
 func (tk *Task) OnPause() error {

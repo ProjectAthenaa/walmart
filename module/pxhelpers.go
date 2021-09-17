@@ -16,7 +16,7 @@ func (tk *Task) PXInit(){
 	})
 
 	if err != nil{
-		tk.SetStatus(module.STATUS_ERROR, "couldn't fetch px payload")
+		tk.SetStatus(module.STATUS_ERROR, err.Error())
 		tk.Stop()
 		return
 	}
@@ -59,7 +59,7 @@ func (tk *Task) PXEvent(){
 	})
 
 	if err != nil{
-		tk.SetStatus(module.STATUS_ERROR, "couldn't fetch px payload")
+		tk.SetStatus(module.STATUS_ERROR, err.Error())
 		tk.Stop()
 		return
 	}

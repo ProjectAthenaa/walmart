@@ -82,10 +82,11 @@ func (tk *Task) SendPX(payload []byte) []byte {
 }
 
 func (tk *Task) AddGQLHeaders(req *http.Request, queryString string){
+	correlId := RandStringRunes(36)
 	req.Headers[`x-o-gql-query`] = []string{queryString}
-	req.Headers[`x-apollo-operation-name`] = []string{strings.Split(queryString," ")[0]}
-	req.Headers[`wm_qos.correlation_id`] = []string{}
-	req.Headers[`x-o-correlation-id`] = []string{}
+	req.Headers[`x-apollo-operation-name`] = []string{strings.Split(queryString," ")[1]}
+	req.Headers[`wm_qos.correlation_id`] = []string{correlId}
+	req.Headers[`x-o-correlation-id`] = []string{correlId}
 
 	req.Headers[`x-o-platform`] = []string{`rweb`}
 	req.Headers[`x-latency-trace`] = []string{`1`}
@@ -94,6 +95,8 @@ func (tk *Task) AddGQLHeaders(req *http.Request, queryString string){
 	req.Headers[`x-enable-server-timing`] = []string{`1`}
 	req.Headers[`x-o-ccm`] = []string{`server`}
 	req.Headers[`x-o-tp-phase`] = []string{`tp5`}
+
+	req.Headers["content-type"] = []string{`application/json`}
 	//x-o-gql-query	mutation saveTenderPlanToPC
 	//x-apollo-operation-name	saveTenderPlanToPC
 	//wm_qos.correlation_id	2n6PoqoebFuCVajzWcwjrrkY82KU-Ep2VDxZ

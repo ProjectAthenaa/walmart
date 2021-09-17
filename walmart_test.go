@@ -40,7 +40,7 @@ func init() {
 func TestModule(t *testing.T) {
 	subToken, controlToken, monitorChannel := uuid.NewString(), uuid.NewString(), uuid.NewString()
 
-	productlink := "866031087"
+	productlink := "570251169"
 
 	//username := "1moewci2"
 	//password := "4k7cvljz"
