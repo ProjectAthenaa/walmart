@@ -2,24 +2,18 @@ package config
 
 import (
 	"github.com/ProjectAthenaa/sonic-core/sonic"
-	"os"
-	"strings"
+	"github.com/ProjectAthenaa/sonic-core/sonic/database/ent/product"
 )
 
 
 var Module *sonic.Module
 
 func init() {
-	var name = "walmart"
-
-	if podName := os.Getenv("POD_NAME"); podName != "" {
-		name = strings.Split(podName, "-")[0]
-	}
 
 	fieldKey := "LOOKUP_PID"
 
 	Module = &sonic.Module{
-		Name: name,
+		Name: string(product.SiteWalmart),
 		Fields: []*sonic.ModuleField{
 			{
 				Validation: "\\d+",
