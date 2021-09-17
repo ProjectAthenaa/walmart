@@ -5,6 +5,7 @@ import (
 	"github.com/ProjectAthenaa/sonic-core/sonic/base"
 	"github.com/ProjectAthenaa/sonic-core/sonic/face"
 	"github.com/ProjectAthenaa/sonic-core/sonic/frame"
+	"github.com/ProjectAthenaa/walmart/encryption"
 	"github.com/prometheus/common/log"
 )
 
@@ -15,11 +16,21 @@ type Task struct {
 	url      string
 	offerid  string
 	storeids []string
+	cartid	string
+	customerid string
+	lineitemid string
+	price string
+	accesspoint string
+	newaddress string
+	contractid string
+	tenderid string
+	preferenceid string
+	orderid string
 	stores   Store
 
 	encryptedPan string
 	encryptedCVV string
-	PIE          PIEStruct
+	PIE          encryption.PIEStruct
 
 	px struct {
 		Response []byte
@@ -71,12 +82,16 @@ func (tk *Task) Flow() {
 
 	funcarr := []func(){
 		tk.Homepage,
+		tk.CreateAcc,
+		tk.GetCartIds,
 		tk.ATC,
-		tk.StoreLocator,
-		tk.SubmitShipping,
-		tk.GetPIEVals,
-		tk.SubmitCard,
-		tk.Payment,
+		tk.CreateDelivery,
+		tk.SetFulfillment,
+		tk.CreateContract,
+		tk.CreateCreditCart,
+		tk.UpdateTenderPlan,
+		tk.PlaceOrder,
+		tk.PurchaseContract,
 		tk.OrderConfirm,
 	}
 

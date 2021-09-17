@@ -4,37 +4,27 @@ import (
 	"fmt"
 	creditcard "github.com/ProjectAthenaa/go-credit-card"
 	http "github.com/ProjectAthenaa/sonic-core/fasttls"
-	"github.com/ProjectAthenaa/sonic-core/protos/module"
 	"github.com/prometheus/common/log"
-	"regexp"
+	"math/rand"
 	"strings"
+	"time"
 )
 
 var (
-	offerIdRe = regexp.MustCompile(`"offerId":"(\w+)"`)
-	storeIdRe = regexp.MustCompile(`"storeId":"(\d+)"`)
+	letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 )
 
-func (tk *Task) OfferId() {
-	req, err := tk.NewRequest("GET", tk.url, nil)
-	if err != nil {
-		tk.SetStatus(module.STATUS_ERROR, "could not fetch homepage")
-		tk.Stop()
-		return
+func RandStringRunes(n int) string {
+	rand.Seed(time.Now().UnixNano())
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
 	}
-	req.Headers = tk.GenerateDefaultHeaders("https://walmart.com/")
+	return string(b)
+}
 
-	res, err := tk.Do(req)
-	if err != nil {
-		tk.SetStatus(module.STATUS_ERROR, "couldnt read walmart page")
-		tk.Stop()
-		return
-	}
-
-	tk.offerid = string(offerIdRe.FindSubmatch(res.Body)[1])
-	for _, submatch := range storeIdRe.FindAllSubmatch(res.Body, -1) {
-		tk.storeids = append(tk.storeids, string(submatch[1]))
-	}
+func (tk *Task) FormatPhone()string{
+	return fmt.Sprintf(`(%s)+%s-%s`, tk.Data.Profile.Shipping.PhoneNumber[:3], tk.Data.Profile.Shipping.PhoneNumber[3:6], tk.Data.Profile.Shipping.PhoneNumber[6:])
 }
 
 func (tk *Task) FormatStores() string {
@@ -89,4 +79,31 @@ func (tk *Task) SendPX(payload []byte) []byte {
 	}
 
 	return res.Body
+}
+
+func (tk *Task) AddGQLHeaders(req *http.Request, queryString string){
+	req.Headers[`x-o-gql-query`] = []string{queryString}
+	req.Headers[`x-apollo-operation-name`] = []string{strings.Split(queryString," ")[0]}
+	req.Headers[`wm_qos.correlation_id`] = []string{}
+	req.Headers[`x-o-correlation-id`] = []string{}
+
+	req.Headers[`x-o-platform`] = []string{`rweb`}
+	req.Headers[`x-latency-trace`] = []string{`1`}
+	req.Headers[`x-o-platform-version`] = []string{`main-95-7de933`}
+	req.Headers[`x-o-segment`] = []string{`oaoh`}
+	req.Headers[`x-enable-server-timing`] = []string{`1`}
+	req.Headers[`x-o-ccm`] = []string{`server`}
+	req.Headers[`x-o-tp-phase`] = []string{`tp5`}
+	//x-o-gql-query	mutation saveTenderPlanToPC
+	//x-apollo-operation-name	saveTenderPlanToPC
+	//wm_qos.correlation_id	2n6PoqoebFuCVajzWcwjrrkY82KU-Ep2VDxZ
+	//x-o-correlation-id	TR7vFweqniBiYYSQthyvF5IZ-__R235qM9fN
+
+	//x-o-platform	rweb
+	//x-latency-trace	1
+	//x-o-platform-version	main-95-7de933
+	//x-o-segment	oaoh
+	//x-enable-server-timing	1
+	//x-o-ccm	server
+	//x-o-tp-phase	tp5
 }
