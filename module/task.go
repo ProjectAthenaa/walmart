@@ -7,6 +7,7 @@ import (
 	"github.com/ProjectAthenaa/sonic-core/sonic/frame"
 	"github.com/ProjectAthenaa/walmart/encryption"
 	"github.com/prometheus/common/log"
+	"sync"
 )
 
 var _ face.ICallback = (*Task)(nil)
@@ -36,6 +37,8 @@ type Task struct {
 		Response []byte
 		RSC      int32
 	}
+
+	accountlock *sync.Mutex
 }
 
 func NewTask(data *module.Data) *Task {
@@ -52,8 +55,9 @@ func (tk *Task) OnPreStart() error {
 	return nil
 }
 func (tk *Task) OnStarting() {
-	log.Info("onstarting")
 	tk.FastClient.CreateCookieJar()
+	tk.accountlock = &sync.Mutex{}
+
 	tk.Flow()
 }
 func (tk *Task) OnPause() error {
@@ -81,9 +85,6 @@ func (tk *Task) Flow() {
 	tk.SetStatus(module.STATUS_PRODUCT_FOUND)
 
 	funcarr := []func(){
-		tk.Homepage,
-		tk.CreateAcc,
-		tk.GetCartIds,
 		tk.ATC,
 		tk.CreateDelivery,
 		tk.SetFulfillment,

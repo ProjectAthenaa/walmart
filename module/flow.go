@@ -42,6 +42,18 @@ var (
 	orderIdRe = regexp.MustCompile(`"order":\{"id":"(\d+)"`)
 )
 
+func (tk *Task) Preload(){
+	tk.accountlock.Lock()
+	defer tk.accountlock.Unlock()
+	for _, sf := range []func(){
+		tk.Homepage,
+		tk.CreateAcc,
+		tk.GetCartIds,
+	}{
+		sf()
+	}
+}
+
 func (tk *Task) Homepage(){
 	req, err := tk.NewRequest("GET", fmt.Sprintf("https://www.walmart.com/ip/./%s", tk.Data.Metadata[*config.Module.Fields[0].FieldKey]), nil)
 	if err != nil {
