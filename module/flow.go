@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/ProjectAthenaa/sonic-core/fasttls"
 	"github.com/ProjectAthenaa/sonic-core/protos/module"
+	"github.com/ProjectAthenaa/sonic-core/sonic/frame"
 	"github.com/ProjectAthenaa/walmart/config"
 	"github.com/ProjectAthenaa/walmart/encryption"
 	"github.com/json-iterator/go"
@@ -43,15 +44,34 @@ var (
 )
 
 func (tk *Task) Preload(){
-	tk.accountlock.Lock()
-	defer tk.accountlock.Unlock()
-	for _, sf := range []func(){
-		tk.Homepage,
-		tk.CreateAcc,
-		tk.GetCartIds,
-	}{
-		sf()
+	go func(){
+		tk.accountlock.Lock()
+		defer tk.accountlock.Unlock()
+		for _, sf := range []func(){
+			tk.Homepage,
+			tk.CreateAcc,
+			tk.GetCartIds,
+		}{
+			sf()
+		}
+	}()
+}
+
+func (tk *Task) MonitorProd(){
+	pubsub, err := frame.SubscribeToChannel(tk.Data.Channels.MonitorChannel)
+	if err != nil {
+		log.Info(err)
+		tk.SetStatus(module.STATUS_ERROR, "monitor err")
+		tk.Stop()
+		return
 	}
+
+	tk.SetStatus(module.STATUS_MONITORING)
+	monitorData := <-pubsub.Chan(tk.Ctx)
+	tk.offerid = monitorData["offerid"].(string)
+	pubsub.Close()
+
+	tk.SetStatus(module.STATUS_PRODUCT_FOUND)
 }
 
 func (tk *Task) Homepage(){

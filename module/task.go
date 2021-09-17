@@ -4,9 +4,7 @@ import (
 	"github.com/ProjectAthenaa/sonic-core/protos/module"
 	"github.com/ProjectAthenaa/sonic-core/sonic/base"
 	"github.com/ProjectAthenaa/sonic-core/sonic/face"
-	"github.com/ProjectAthenaa/sonic-core/sonic/frame"
 	"github.com/ProjectAthenaa/walmart/encryption"
-	"github.com/prometheus/common/log"
 	"sync"
 )
 
@@ -69,22 +67,10 @@ func (tk *Task) OnStopping() {
 }
 
 func (tk *Task) Flow() {
-	pubsub, err := frame.SubscribeToChannel(tk.Data.Channels.MonitorChannel)
-	if err != nil {
-		log.Info(err)
-		tk.SetStatus(module.STATUS_ERROR, "monitor err")
-		tk.Stop()
-		return
-	}
-
-	tk.SetStatus(module.STATUS_MONITORING)
-	monitorData := <-pubsub.Chan(tk.Ctx)
-	tk.offerid = monitorData["offerid"].(string)
-	pubsub.Close()
-
-	tk.SetStatus(module.STATUS_PRODUCT_FOUND)
-
 	funcarr := []func(){
+		tk.Preload,
+		tk.MonitorProd,
+		tk.accountlock.Lock,
 		tk.ATC,
 		tk.CreateDelivery,
 		tk.SetFulfillment,
