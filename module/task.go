@@ -31,6 +31,8 @@ type Task struct {
 	encryptedCVV string
 	PIE          encryption.PIEStruct
 
+	pxuuid string
+
 	px struct {
 		Response []byte
 		RSC      int32
@@ -55,8 +57,6 @@ func (tk *Task) OnPreStart() error {
 func (tk *Task) OnStarting() {
 	tk.FastClient.CreateCookieJar()
 	tk.accountlock = &sync.Mutex{}
-	tk.PXInit()
-	tk.PXEvent()
 	tk.Flow()
 }
 func (tk *Task) OnPause() error {

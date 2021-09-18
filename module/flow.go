@@ -46,6 +46,8 @@ func (tk *Task) Preload(){
 		defer tk.accountlock.Unlock()
 		for _, sf := range []func(){
 			tk.Homepage,
+			tk.PXInit,
+			tk.PXEvent,
 			tk.CreateAcc,
 			tk.GetCartIds,
 		}{
