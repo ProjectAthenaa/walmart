@@ -91,17 +91,17 @@ func (tk *Task) PXInit(){
 		return
 	}
 
-	cookie, err := pxClient.GetCookie(tk.Ctx, &perimeterx.GetCookieRequest{PXResponse: res.Body})
-	if err != nil {
-		tk.SetStatus(module.STATUS_ERROR)
-		tk.Stop()
-		return
-	}
+	//cookie, err := pxClient.GetCookie(tk.Ctx, &perimeterx.GetCookieRequest{PXResponse: res.Body})
+	//if err != nil {
+	//	tk.SetStatus(module.STATUS_ERROR)
+	//	tk.Stop()
+	//	return
+	//}
+	//
+	//log.Info("init px",  cookie.Value)
+	//tk.FastClient.Jar.Set(cookie.Name, cookie.Value)
 
-	log.Info("init px",  cookie.Value)
-	tk.FastClient.Jar.Set(cookie.Name, cookie.Value)
-
-	cookie, err = pxClient.GetPXde(tk.Ctx, &perimeterx.GetCookieRequest{PXResponse: res.Body})
+	cookie, err := pxClient.GetPXde(tk.Ctx, &perimeterx.GetCookieRequest{PXResponse: res.Body})
 	if err != nil {
 		log.Info(err.Error())
 		tk.SetStatus(module.STATUS_ERROR)

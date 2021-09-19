@@ -75,6 +75,7 @@ func (tk *Task) Flow() {
 		tk.ATC,
 		tk.CreateDelivery,
 		tk.SetFulfillment,
+		tk.PXInit,
 		tk.CreateContract,
 		tk.CreateCreditCart,
 		tk.UpdateTenderPlan,
