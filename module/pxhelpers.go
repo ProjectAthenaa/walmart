@@ -44,7 +44,7 @@ func (tk *Task) PXInit(){
  	var p2struct *PayloadOut
 	json.Unmarshal(payload.Payload, &p2struct)
 
-	req, err := tk.NewRequest("POST", "https://collector-pxu6b0qd2s.px-cloud.net/api/v2/collector", []byte(fmt.Sprintf(`payload=%s&appId=%s&tag=%s&uuid=%s&ft=%s&seq=%s&en=%s&pc=%s&pxhd=%s&rsc=%s`, p2struct.Payload, "PXu6b0qd2S", p2struct.Tag, tk.pxuuid, p2struct.Ft, "0", p2struct.En, p2struct.Pc, string(tk.FastClient.Jar.PeekValue("pxhd")), "1")))
+	req, err := tk.NewRequest("POST", "https://collector-pxu6b0qd2s.px-cloud.net/api/v2/collector", []byte(fmt.Sprintf(`payload=%s&appId=%s&tag=%s&uuid=%s&ft=%s&seq=%s&en=%s&pc=%s&pxhd=%s&rsc=%s`, p2struct.Payload, "PXu6b0qd2S", p2struct.Tag, tk.pxuuid, p2struct.Ft, "0", p2struct.En, p2struct.Pc, string(tk.FastClient.Jar.PeekValue("_pxhd")), "1")))
 	if err != nil {
 		tk.SetStatus(module.STATUS_ERROR, "px error")
 		tk.Stop()
@@ -76,7 +76,7 @@ func (tk *Task) PXInit(){
 	var p3struct *PayloadOut
 	json.Unmarshal(payload.Payload, &p3struct)
 
-	req, err = tk.NewRequest("POST", "https://collector-pxu6b0qd2s.px-cloud.net/api/v2/collector",  []byte(fmt.Sprintf(`payload=%s&appId=%s&tag=%s&uuid=%s&ft=%s&seq=%s&en=%s&cs=%s&pc=%s&sid=%s&pxhd=%s&cts=%s&rsc=%s`, p3struct.Payload, "PXu6b0qd2S", p3struct.Tag, p3struct.Uuid, p3struct.Ft, "1", p3struct.En, p3struct.Cs, p3struct.Pc, p3struct.Sid, string(tk.FastClient.Jar.PeekValue("pxhd")), p3struct.Cts, p3struct.Rsc)))
+	req, err = tk.NewRequest("POST", "https://collector-pxu6b0qd2s.px-cloud.net/api/v2/collector",  []byte(fmt.Sprintf(`payload=%s&appId=%s&tag=%s&uuid=%s&ft=%s&seq=%s&en=%s&cs=%s&pc=%s&sid=%s&pxhd=%s&cts=%s&rsc=%s`, p3struct.Payload, "PXu6b0qd2S", p3struct.Tag, p3struct.Uuid, p3struct.Ft, "1", p3struct.En, p3struct.Cs, p3struct.Pc, p3struct.Sid, string(tk.FastClient.Jar.PeekValue("_pxhd")), p3struct.Cts, p3struct.Rsc)))
 	if err != nil {
 		tk.SetStatus(module.STATUS_ERROR, "px error")
 		tk.Stop()
@@ -99,7 +99,18 @@ func (tk *Task) PXInit(){
 	}
 
 	log.Info("init px",  cookie.Value)
-	tk.FastClient.Jar.Set("_px3", cookie.Value)
+	tk.FastClient.Jar.Set(cookie.Name, cookie.Value)
+
+	cookie, err = pxClient.GetPXde(tk.Ctx, &perimeterx.GetCookieRequest{PXResponse: res.Body})
+	if err != nil {
+		log.Info(err.Error())
+		tk.SetStatus(module.STATUS_ERROR)
+		tk.Stop()
+		return
+	}
+
+	log.Info("init pxde",  cookie.Value)
+	tk.FastClient.Jar.Set(cookie.Name, cookie.Value)
 	tk.px.Response = res.Body
 
 	tk.px.RSC++
@@ -123,9 +134,11 @@ func (tk *Task) PXEvent(){
 	var eventstruct *PayloadOut
 	json.Unmarshal(payload.Payload, &eventstruct)
 
-	req, err := tk.NewRequest("POST", "https://collector-pxu6b0qd2s.px-cloud.net/api/v2/collector", payload.Payload)
+	//add event struct
+
+	req, err := tk.NewRequest("POST", "https://collector-pxu6b0qd2s.px-cloud.net/api/v2/collector", []byte(fmt.Sprintf(`payload=%s&appId=%s&tag=%s&uuid=%s&ft=%s&seq=%s&en=%s&cs=%s&pc=%s&sid=%s&vid=%s&pxhd=%s&cts=%s&rsc=%s`, eventstruct.Payload, eventstruct.AppID, eventstruct.Tag, tk.pxuuid, eventstruct.Ft, "3", eventstruct.En, eventstruct.Cs, eventstruct.Pc, eventstruct.Sid, eventstruct.Vid,  string(tk.FastClient.Jar.PeekValue("_pxhd")), eventstruct.Cts, "4")))
 	if err != nil {
-		tk.SetStatus(module.STATUS_ERROR, "could not get create px init post")
+		tk.SetStatus(module.STATUS_ERROR, "could not get create px event post")
 		tk.Stop()
 		return
 	}
@@ -133,7 +146,7 @@ func (tk *Task) PXEvent(){
 
 	res, err := tk.Do(req)
 	if err != nil {
-		tk.SetStatus(module.STATUS_ERROR, "could not post px init")
+		tk.SetStatus(module.STATUS_ERROR, "could not post px event")
 		tk.Stop()
 		return
 	}
@@ -144,7 +157,7 @@ func (tk *Task) PXEvent(){
 		return
 	}
 
-	//log.Info("event px",  cookie.Value)
+	log.Info("event px",  cookie.Value)
 	tk.FastClient.Jar.Set("_px3", cookie.Value)
 	tk.px.Response = res.Body
 
@@ -168,7 +181,7 @@ func (tk *Task) PXHoldCaptcha(blockedUrl string){
 	var p2struct *PayloadOut
 	json.Unmarshal(payload.Payload, &p2struct)
 
-	req, err := tk.NewRequest("POST", "https://collector-pxu6b0qd2s.px-cloud.net/api/v2/bundle", []byte(fmt.Sprintf(`payload=%s&appId=%s&tag=%s&uuid=%s&ft=%s&seq=%s&en=%s&pc=%s&pxhd=%s&rsc=%s`, p2struct.Payload, "PXu6b0qd2S", p2struct.Tag, tk.pxuuid, p2struct.Ft, "0", p2struct.En, p2struct.Pc, string(tk.FastClient.Jar.PeekValue("pxhd")), "1")))
+	req, err := tk.NewRequest("POST", "https://collector-pxu6b0qd2s.px-cloud.net/api/v2/bundle", []byte(fmt.Sprintf(`payload=%s&appId=%s&tag=%s&uuid=%s&ft=%s&seq=%s&en=%s&pc=%s&pxhd=%s&rsc=%s`, p2struct.Payload, "PXu6b0qd2S", p2struct.Tag, tk.pxuuid, p2struct.Ft, "0", p2struct.En, p2struct.Pc, string(tk.FastClient.Jar.PeekValue("_pxhd")), "1")))
 	if err != nil {
 		tk.SetStatus(module.STATUS_ERROR, "px error")
 		tk.Stop()
@@ -198,7 +211,7 @@ func (tk *Task) PXHoldCaptcha(blockedUrl string){
 	var p3struct *PayloadOut
 	json.Unmarshal(payload.Payload, &p3struct)
 
-	req, err = tk.NewRequest("POST", "https://collector-pxu6b0qd2s.px-cloud.net/api/v2/bundle", []byte(fmt.Sprintf(`payload=%s&appId=%s&tag=%s&uuid=%s&ft=%s&seq=%s&en=%s&cs=%s&pc=%s&sid=%s&pxhd=%s&cts=%s&rsc=%s`, p3struct.Payload, "PXu6b0qd2S", p3struct.Tag, p3struct.Uuid, p3struct.Ft, "1", p3struct.En, p3struct.Cs, p3struct.Pc, p3struct.Sid, string(tk.FastClient.Jar.PeekValue("pxhd")), p3struct.Cts, p3struct.Rsc)))
+	req, err = tk.NewRequest("POST", "https://collector-pxu6b0qd2s.px-cloud.net/api/v2/bundle", []byte(fmt.Sprintf(`payload=%s&appId=%s&tag=%s&uuid=%s&ft=%s&seq=%s&en=%s&cs=%s&pc=%s&sid=%s&pxhd=%s&cts=%s&rsc=%s`, p3struct.Payload, "PXu6b0qd2S", p3struct.Tag, p3struct.Uuid, p3struct.Ft, "1", p3struct.En, p3struct.Cs, p3struct.Pc, p3struct.Sid, string(tk.FastClient.Jar.PeekValue("_pxhd")), p3struct.Cts, p3struct.Rsc)))
 	if err != nil {
 		tk.SetStatus(module.STATUS_ERROR, "px error")
 		tk.Stop()
@@ -228,7 +241,7 @@ func (tk *Task) PXHoldCaptcha(blockedUrl string){
 	var hcapstruct *PayloadOut
 	json.Unmarshal(payload.Payload, &hcapstruct)
 
-	req, err = tk.NewRequest("POST", "https://collector-pxu6b0qd2s.px-cloud.net/api/v2/bundle", []byte(fmt.Sprintf(`payload=%s&appId=%s&tag=%s&uuid=%s&ft=%s&seq=%s&en=%s&cs=%s&pc=%s&sid=%s󠄶󠄳󠄱󠄹󠄴󠄵󠄳󠄶󠄷󠄶󠄷󠄳&vid=%s&ci=%s&pxhd=%s&cts=%s&rsc=%s`, hcapstruct.Payload, "PXu6b0qd2S", hcapstruct.Tag, hcapstruct.Uuid, hcapstruct.Ft, "5", hcapstruct.En, hcapstruct.Cs, hcapstruct.Pc, hcapstruct.Sid, hcapstruct.Vid, hcapstruct.Ci, string(tk.FastClient.Jar.PeekValue("pxhd")), "4")))
+	req, err = tk.NewRequest("POST", "https://collector-pxu6b0qd2s.px-cloud.net/api/v2/bundle", []byte(fmt.Sprintf(`payload=%s&appId=%s&tag=%s&uuid=%s&ft=%s&seq=%s&en=%s&cs=%s&pc=%s&sid=%s󠄶󠄳󠄱󠄹󠄴󠄵󠄳󠄶󠄷󠄶󠄷󠄳&vid=%s&ci=%s&pxhd=%s&cts=%s&rsc=%s`, hcapstruct.Payload, "PXu6b0qd2S", hcapstruct.Tag, hcapstruct.Uuid, hcapstruct.Ft, "5", hcapstruct.En, hcapstruct.Cs, hcapstruct.Pc, hcapstruct.Sid, hcapstruct.Vid, hcapstruct.Ci, string(tk.FastClient.Jar.PeekValue("_pxhd")), "4")))
 	if err != nil {
 		tk.SetStatus(module.STATUS_ERROR, "cant create bundle second post")
 		tk.Stop()
