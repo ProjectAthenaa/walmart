@@ -110,7 +110,13 @@ func (tk *Task) PXInit(){
 	}
 
 	log.Info("init pxde",  cookie.Value)
-	tk.FastClient.Jar.Set(cookie.Name, cookie.Value)
+	//tk.FastClient.Jar.Set(cookie.Name, cookie.Value)
+
+	tk.FastClient.Jar.Set("_px3", "800799160b5318564d395a419a1a5f1f1478db4f5684c5df8e502740dd04976d:SL98iQ+NVLfrIOzbQaDWnbegC81kLI4hUvsPMePB3bLlYu8ashQ1nR7DFZ49dSua5RcpgHy//QWGu3rZwAlusA==:1000:jv1rXRa/y3aljOEBSSPoqklzl6W9E69nS8PS8f2a0S+jNTcpFSWStnFbKv4f/LVUIZhwlJFHxrYwGGoe/LOvp2VPwrGX3/cIggN8azaOq3f1f7W8+FLIRYuD/tAtwEmvgwfcrET6N9Woml0AXhwW2gjEDVmQsdyAKkmhUVW1Kpkf5lwHS4nZh08vJlpinQJ84+uTes1nV4qckJ7KnXBb5g==")
+	tk.FastClient.Jar.Set("_pxde", "35d633d0400e6bc8dac1f89f6c6e50794a4cf0572ce285813db62d9987b8664b:eyJ0aW1lc3RhbXAiOjE2MzIyMDg0Njk0NjIsImZfa2IiOjAsImlwY19pZCI6W119")
+	tk.FastClient.Jar.Set("_pxhd", "C-zTux/2qX6DYhsbEipAl09fPxk-VumZUy60iHQ8e0cxBJQUN4/vbVxKE6FyTf-CjGP5wOOZVRpPhzFOFCt6Vg==:qq6yK87gPoB4TgcY0q8LEKy6pYoi5DC6WSW/5L665ldIqYskbDbhMfZlAykQIJpTlsXJr5eqBITk67WPr0xKavOUM5J9rXhH5RCvjXWdriE=")
+	tk.FastClient.Jar.Set("_pxvid", "89c746ed-1aab-11ec-8e79-47616d49756d")
+
 	tk.px.Response = res.Body
 
 	tk.px.RSC++

@@ -25,6 +25,7 @@ type Task struct {
 	tenderid string
 	preferenceid string
 	orderid string
+	encarr []string
 	stores   Store
 
 	encryptedPan string

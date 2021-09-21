@@ -24,7 +24,7 @@ func RandStringRunes(n int) string {
 }
 
 func (tk *Task) FormatPhone()string{
-	return fmt.Sprintf(`(%s)+%s-%s`, tk.Data.Profile.Shipping.PhoneNumber[:3], tk.Data.Profile.Shipping.PhoneNumber[3:6], tk.Data.Profile.Shipping.PhoneNumber[6:])
+	return fmt.Sprintf(`(%s) %s-%s`, tk.Data.Profile.Shipping.PhoneNumber[:3], tk.Data.Profile.Shipping.PhoneNumber[3:6], tk.Data.Profile.Shipping.PhoneNumber[6:])
 }
 
 func (tk *Task) FormatStores() string {
@@ -51,10 +51,12 @@ func (tk *Task) GenerateDefaultHeaders(referrer string) http.Headers {
 		`Sec-Fetch-Mode`:   {`cors`},
 		`referer`:          {referrer},
 		`X-Requested-With`: {`XMLHttpRequest`},
-		`origin`:           {`https://www.newbalance.com`},
+		`origin`:           {`https://www.walmart.com`},
 		`Pragma`:           {`no-cache`},
 		`Cache-Control`:    {`no-cache`},
 		`Connection`:       {`keep-alive`},
+		//`x-px-authorization`: {`1`},
+		//`x-px-bypass-reason`: {`Error checking sdk enabled - general failure`},
 	}
 }
 

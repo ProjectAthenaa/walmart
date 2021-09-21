@@ -55,7 +55,7 @@ func TestModule(t *testing.T) {
 	tk := &module.Data{
 		TaskID: uuid.NewString(),
 		Profile: &module.Profile{
-			Email: "poprer656sad@gmail.com",
+			Email: "terrydavis903@gmail.com",
 			Shipping: &module.Shipping{
 				FirstName:   "Omar",
 				LastName:    "Hu",
@@ -81,10 +81,10 @@ func TestModule(t *testing.T) {
 				BillingIsShipping: true,
 			},
 			Billing: &module.Billing{
-				Number:          "4207670236068972",
-				ExpirationMonth: "05",
-				ExpirationYear:  "25",
-				CVV:             "997",
+				Number:          "4427047942273358",
+				ExpirationMonth: "06",
+				ExpirationYear:  "29",
+				CVV:             "255",
 			},
 		},
 		Proxy: &module.Proxy{
