@@ -2,13 +2,11 @@ package module
 
 import (
 	"fmt"
+	"github.com/ProjectAthenaa/pxutils"
 	"github.com/ProjectAthenaa/sonic-core/protos/module"
 	"github.com/ProjectAthenaa/sonic-core/sonic/antibots/perimeterx"
 	"github.com/google/uuid"
-	"github.com/ProjectAthenaa/pxutils"
 	"github.com/prometheus/common/log"
-	"math/rand"
-	"time"
 )
 
 type PayloadOut struct{
@@ -29,10 +27,7 @@ type PayloadOut struct{
 }
 
 func (tk *Task) PXInit(){
-	rand.Seed(time.Now().Unix())
 	tk.pxuuid = pxutils.UUID()
-	//			 d006079e-0ae9-4a44-a138-92e72c2021c5
-	//tk.pxuuid = "a6679780-21ca-11ec-8ec8-d7f0dba116a5"
 
 	payload, err := pxClient.ConstructPayload(tk.Ctx, &perimeterx.Payload{
 		Site:           perimeterx.SITE_WALMART,
@@ -69,8 +64,6 @@ func (tk *Task) PXInit(){
 	log.Info("made px2 req")
 
 	log.Info(string(res.Body))
-
-	//res.Body = []byte(`{"do":["sid|8bbfe380-217d-11ec-8a8c-c9a2296c1be0","cls|13045088379139293826|17896080114530919378","sts|1632958364100","wcs|c5aff75aiv60uabbnpvg","drc|3585","cts|8bc00a90-217d-11ec-8a8c-c9a2296c1be0|true","cs|778c8e95f23d8d26da364033fc3a56f589044854878e3368744b7318e2ed5d5c","vid|872c70bf-217d-11ec-81a2-58705a54534b|31536000|true","sff|cc|60|U2FtZVNpdGU9TGF4Ow==","sff|cfp|60|1","en|_pxde|330|8cc0a15d4704ef57467af9fd292d584adbf128831b6e39e053755a932a61aaee:eyJ0aW1lc3RhbXAiOjE2MzI5NTgzNjQxMDAsImZfa2IiOjAsImlwY19pZCI6W119|true|300"]}`)
 
 	cookie, err := pxClient.GetPXde(tk.Ctx, &perimeterx.GetCookieRequest{PXResponse: res.Body})
 	if err != nil {
