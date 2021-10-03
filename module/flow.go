@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/ProjectAthenaa/sonic-core/fasttls"
 	"github.com/ProjectAthenaa/sonic-core/protos/module"
-	"github.com/ProjectAthenaa/sonic-core/sonic/frame"
 	"github.com/ProjectAthenaa/walmart/config"
 	"github.com/ProjectAthenaa/walmart/encryption"
 	"github.com/json-iterator/go"
@@ -39,31 +38,10 @@ var (
 
 	contractIdRe = regexp.MustCompile(`"createPurchaseContract":\{"id":"([\w-]+)"`)
 	tenderPlanRe = regexp.MustCompile(`"tenderPlanId":"([\w-]+)"`)
+
+	offerIdRe = regexp.MustCompile(`"orderLimit":\d+,"offerId":"(\w+)"`)
+	pxRedirRe = regexp.MustCompile(`"redirectUrl":"([^"]+)"`)
 )
-
-func (tk *Task) MonitorProd(){
-	pubsub, err := frame.SubscribeToChannel(tk.Data.Channels.MonitorChannel)
-	if err != nil {
-		log.Info(err)
-		tk.SetStatus(module.STATUS_ERROR, "monitor err")
-		tk.Stop()
-		return
-	}
-	defer pubsub.Close()
-
-	tk.SetStatus(module.STATUS_MONITORING)
-	for monitorData := range pubsub.Chan(tk.Ctx){
-		log.Info(monitorData)
-		if monitorData == nil{
-			continue
-		}
-		tk.offerid = monitorData["offerid"].(string)
-		break
-	}
-
-
-	tk.SetStatus(module.STATUS_PRODUCT_FOUND)
-}
 
 func (tk *Task) Homepage(){
 	req, err := tk.NewRequest("GET", fmt.Sprintf("https://www.walmart.com/ip/~/%s", tk.Data.Metadata[*config.Module.Fields[0].FieldKey]), nil)
@@ -82,19 +60,21 @@ func (tk *Task) Homepage(){
 		return
 	}
 
-	if res.StatusCode == 307{
-		tk.PXHoldCaptcha(res.Headers["Location"][0])
+	if res.StatusCode == 301 || res.StatusCode == 302{
 		tk.HomepageRedirect(res.Headers["Location"][0])
 		return
 	}
-	if res.StatusCode == 301 || res.StatusCode == 302{
-		tk.HomepageRedirect(res.Headers["Location"][0])
+
+	if strings.Contains(string(res.Body), "/blocked"){
+		tk.PXHoldCaptcha(string(pxRedirRe.FindSubmatch(res.Body)[1]))
+		tk.Homepage()
 		return
 	}
 
 	//"/blocked?url=Lw==&uuid=3ec36ab1-17a8-11ec-a2d4-78524271664b&vid=&g=b"
 	tk.price = string(priceRe.FindSubmatch(res.Body)[1])
 	tk.lineitemid = string(lineItemIdRe.FindSubmatch(res.Body)[1])
+	tk.offerid = string(offerIdRe.FindSubmatch(res.Body)[1])
 	for _, submatch := range storeIdRe.FindAllSubmatch(res.Body, -1) {
 		tk.storeids = append(tk.storeids, string(submatch[1]))
 	}
@@ -118,6 +98,7 @@ func (tk *Task) HomepageRedirect(link string){
 
 	tk.price = string(priceRe.FindSubmatch(res.Body)[1])
 	tk.lineitemid = string(lineItemIdRe.FindSubmatch(res.Body)[1])
+	tk.offerid = string(offerIdRe.FindSubmatch(res.Body)[1])
 	for _, submatch := range storeIdRe.FindAllSubmatch(res.Body, -1) {
 		tk.storeids = append(tk.storeids, string(submatch[1]))
 	}

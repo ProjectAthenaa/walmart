@@ -81,10 +81,10 @@ func TestModule(t *testing.T) {
 				BillingIsShipping: true,
 			},
 			Billing: &module.Billing{
-				Number:          "4427047942273358",
-				ExpirationMonth: "06",
-				ExpirationYear:  "29",
-				CVV:             "255",
+				Number:          "4894537326576479",
+				ExpirationMonth: "03",
+				ExpirationYear:  "28",
+				CVV:             "164",
 			},
 		},
 		Proxy: &module.Proxy{
