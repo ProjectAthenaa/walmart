@@ -5,7 +5,10 @@ import (
 	"github.com/ProjectAthenaa/sonic-core/protos/module"
 	"github.com/ProjectAthenaa/sonic-core/sonic/antibots/perimeterx"
 	"github.com/google/uuid"
+	"github.com/ProjectAthenaa/pxutils"
 	"github.com/prometheus/common/log"
+	"math/rand"
+	"time"
 )
 
 type PayloadOut struct{
@@ -26,7 +29,10 @@ type PayloadOut struct{
 }
 
 func (tk *Task) PXInit(){
-	tk.pxuuid = uuid.NewString()
+	rand.Seed(time.Now().Unix())
+	tk.pxuuid = pxutils.UUID()
+	//			 d006079e-0ae9-4a44-a138-92e72c2021c5
+	//tk.pxuuid = "a6679780-21ca-11ec-8ec8-d7f0dba116a5"
 
 	payload, err := pxClient.ConstructPayload(tk.Ctx, &perimeterx.Payload{
 		Site:           perimeterx.SITE_WALMART,
@@ -45,6 +51,7 @@ func (tk *Task) PXInit(){
 	json.Unmarshal(payload.Payload, &p2struct)
 
 	req, err := tk.NewRequest("POST", "https://collector-pxu6b0qd2s.px-cloud.net/api/v2/collector", []byte(fmt.Sprintf(`payload=%s&appId=%s&tag=%s&uuid=%s&ft=%s&seq=%s&en=%s&pc=%s&pxhd=%s&rsc=%s`, p2struct.Payload, "PXu6b0qd2S", p2struct.Tag, tk.pxuuid, p2struct.Ft, "0", p2struct.En, p2struct.Pc, string(tk.FastClient.Jar.PeekValue("_pxhd")), "1")))
+	//req, err := tk.NewRequest("POST", "https://collector-pxu6b0qd2s.px-cloud.net/api/v2/collector", []byte(`payload=aUkQRhAIEGJqABAeEFYQCEkQYmoLBBAIEFpGRkJBCB0dRUVFHEVTXl9TQEYcUV1fHVtCHWBTSF1AH2BbQkBbVldAHwEEAh92QFtURltcVR9mQFtZVx9wXkdXHwEfZVpXV15XVh92QFtURltcVR9zUUZbXVwdBQUACwIACgEEDVNGWlFCW1YPBQUACwIACgEEFFNGWkJVW1YPc0ZaV1xTel1fV0JTVVd2V0FZRl1CFFNGWlFVW1YPXEdeXhRTRlpIXFtWD3tGV19xU0BdR0FXXm0BVAZRBgAHBR8CVAQGHwYLBQIfUwEFCh8DClcGUwoGVlYBBVZtW0ZXX0EUU0ZaW1dbVg9cR15eFFNGWkFGW1YPcWECAAIUU0ZaVUdbVg9IfQdzV11wdgVhZncFQVRhdAtcVHZwXm1LQVdrXmVKfnR8QlgUU0ZaU1xRW1YPXEdeXhRTRlpXXFMPRkBHVxAeEGJqBAEQCBBlW1wBABAeEGJqAwsDEAgCHhBiagoHAhAIAh4QYmoKBwMQCAMAAwoeEGJqAwICChAIAQQCAh4QYmoDAgcHEAgDBAEACwoDAAMAAwMHHhBiagMCBwQQCAMEAQALCgMAAwADAAEeEGJqAwIBChAIEFBXAVBWBgMCHwADUAAfAwNXUR9QV1ELH1MDUwNTUwsKBQYEChAeEGJqAQUDEAhGQEdXT09v&appId=PXu6b0qd2S&tag=v6.7.9&uuid=be3bd410-21b2-11ec-bec9-a1a1aa987468&ft=221&seq=0&en=NTA&pc=7644296484018228&pxhd=pK-lPU8/JUkormbN5KeaCOs0RQOu1vc4V9tS7cvhFaC4fg2czrfyVMtwOBSxL3OqCaTeIeDWs-sGqcKnjUMTxQ==:wL23mjTaam6iNGhGdIlSg9X/IKhVTaKv3B753W057hvYi5dDEm/bGOE-QxA9Uv7jeDxkYYwutV8vcWPcVtVGrhmhsJ49SDN8sl6ae8YFE7M=`))
 	if err != nil {
 		tk.SetStatus(module.STATUS_ERROR, "px error")
 		tk.Stop()
@@ -61,6 +68,22 @@ func (tk *Task) PXInit(){
 	}
 	log.Info("made px2 req")
 
+	log.Info(string(res.Body))
+
+	//res.Body = []byte(`{"do":["sid|8bbfe380-217d-11ec-8a8c-c9a2296c1be0","cls|13045088379139293826|17896080114530919378","sts|1632958364100","wcs|c5aff75aiv60uabbnpvg","drc|3585","cts|8bc00a90-217d-11ec-8a8c-c9a2296c1be0|true","cs|778c8e95f23d8d26da364033fc3a56f589044854878e3368744b7318e2ed5d5c","vid|872c70bf-217d-11ec-81a2-58705a54534b|31536000|true","sff|cc|60|U2FtZVNpdGU9TGF4Ow==","sff|cfp|60|1","en|_pxde|330|8cc0a15d4704ef57467af9fd292d584adbf128831b6e39e053755a932a61aaee:eyJ0aW1lc3RhbXAiOjE2MzI5NTgzNjQxMDAsImZfa2IiOjAsImlwY19pZCI6W119|true|300"]}`)
+
+	cookie, err := pxClient.GetPXde(tk.Ctx, &perimeterx.GetCookieRequest{PXResponse: res.Body})
+	if err != nil {
+		log.Info(err.Error())
+		tk.SetStatus(module.STATUS_ERROR)
+		tk.Stop()
+		return
+	}
+
+	log.Info("init pxde",  cookie.Value)
+	tk.FastClient.Jar.Set(cookie.Name, cookie.Value)
+
+	// todo: STARTS PX 3
 	payload, err = pxClient.ConstructPayload(tk.Ctx, &perimeterx.Payload{
 		Site:           perimeterx.SITE_WALMART,
 		Type:           perimeterx.PXType_PX34,
@@ -76,7 +99,17 @@ func (tk *Task) PXInit(){
 	var p3struct *PayloadOut
 	json.Unmarshal(payload.Payload, &p3struct)
 
-	req, err = tk.NewRequest("POST", "https://collector-pxu6b0qd2s.px-cloud.net/api/v2/collector",  []byte(fmt.Sprintf(`payload=%s&appId=%s&tag=%s&uuid=%s&ft=%s&seq=%s&en=%s&cs=%s&pc=%s&sid=%s&pxhd=%s&cts=%s&rsc=%s`, p3struct.Payload, "PXu6b0qd2S", p3struct.Tag, p3struct.Uuid, p3struct.Ft, "1", p3struct.En, p3struct.Cs, p3struct.Pc, p3struct.Sid, string(tk.FastClient.Jar.PeekValue("_pxhd")), p3struct.Cts, p3struct.Rsc)))
+	log.Info("init pxvid", p3struct.Vid)
+	tk.FastClient.Jar.Set("_pxvid", p3struct.Vid)
+
+	tk.px.Sid = p3struct.Sid
+	tk.px.Vid = p3struct.Vid
+	tk.px.Cts = p3struct.Cts
+	tk.px.Cs = p3struct.Cs
+
+	req, err = tk.NewRequest("POST", "https://collector-pxu6b0qd2s.px-cloud.net/api/v2/collector",  []byte(fmt.Sprintf(`payload=%s&appId=%s&tag=%s&uuid=%s&ft=%s&seq=%s&en=%s&cs=%s&pc=%s&sid=%s&vid=%s&pxhd=%s&cts=%s&rsc=%s`, p3struct.Payload, "PXu6b0qd2S", p3struct.Tag, p3struct.Uuid, p3struct.Ft, "1", p3struct.En, p3struct.Cs, p3struct.Pc, p3struct.Sid, p3struct.Vid,string(tk.FastClient.Jar.PeekValue("_pxhd")), p3struct.Cts, p3struct.Rsc)))
+	//req, err = tk.NewRequest("POST", "https://collector-pxu6b0qd2s.px-cloud.net/api/v2/collector",  []byte(fmt.Sprintf(`payload=%s&appId=%s&tag=%s&uuid=%s&ft=%s&seq=%s&en=%s&cs=%s&pc=%s&sid=%s&vid=%s&pxhd=%s&cts=%s&rsc=%s`, p3struct.Payload, "PXu6b0qd2S", p3struct.Tag, tk.pxuuid, p3struct.Ft, "1", p3struct.En, "e9e03ab15dbc40ed6a7220660e2020b19a73c68abaee1e164ff5505c2f49d1a5", p3struct.Pc, "4efc1fa0-2019-11ec-955a-175002b6eef9󠄱󠄶󠄳󠄲󠄸󠄰󠄵󠄳󠄶󠄱󠄳󠄳󠄱󠄳󠄲󠄸󠄰󠄴󠄸󠄹󠄸󠄳󠄰󠄶󠄱󠄶󠄳󠄲󠄸󠄰󠄳󠄲󠄸󠄵󠄴󠄳󠄵󠄱󠄶󠄳󠄲󠄸󠄰󠄳󠄰󠄷󠄹󠄷󠄱󠄷", "4b824d10-2019-11ec-897a-5841624c5578", `/S12fRFh-gWIhRnARym7Oj2s81LOQ0vQZ45WDKRlH03dUOnxn3OD5z7bugnE3kISWSw4jh8tTm7JXLNsR9fFtw==:jyJEm5/2XJPLAp1OlYlyvgDJd0rP3/2uN-hMXd7v2vv0I555rI-RgCQ0cCnbmSG/GeyQwawCkQoGNkgXM-MW0xYJ1Q5GtEz2BR6QWyb8/6s=`, "4efc6dc0-2019-11ec-955a-175002b6eef9", p3struct.Rsc)))
+
 	if err != nil {
 		tk.SetStatus(module.STATUS_ERROR, "px error")
 		tk.Stop()
@@ -91,17 +124,17 @@ func (tk *Task) PXInit(){
 		return
 	}
 
-	//cookie, err := pxClient.GetCookie(tk.Ctx, &perimeterx.GetCookieRequest{PXResponse: res.Body})
-	//if err != nil {
-	//	tk.SetStatus(module.STATUS_ERROR)
-	//	tk.Stop()
-	//	return
-	//}
-	//
-	//log.Info("init px",  cookie.Value)
-	//tk.FastClient.Jar.Set(cookie.Name, cookie.Value)
+	cookie, err = pxClient.GetCookie(tk.Ctx, &perimeterx.GetCookieRequest{PXResponse: res.Body})
+	if err != nil {
+		tk.SetStatus(module.STATUS_ERROR)
+		tk.Stop()
+		return
+	}
 
-	cookie, err := pxClient.GetPXde(tk.Ctx, &perimeterx.GetCookieRequest{PXResponse: res.Body})
+	log.Info("init px",  cookie.Value)
+	tk.FastClient.Jar.Set(cookie.Name, cookie.Value)
+
+	cookie, err = pxClient.GetPXde(tk.Ctx, &perimeterx.GetCookieRequest{PXResponse: res.Body})
 	if err != nil {
 		log.Info(err.Error())
 		tk.SetStatus(module.STATUS_ERROR)
@@ -110,16 +143,10 @@ func (tk *Task) PXInit(){
 	}
 
 	log.Info("init pxde",  cookie.Value)
-	//tk.FastClient.Jar.Set(cookie.Name, cookie.Value)
-
-	tk.FastClient.Jar.Set("_px3", "800799160b5318564d395a419a1a5f1f1478db4f5684c5df8e502740dd04976d:SL98iQ+NVLfrIOzbQaDWnbegC81kLI4hUvsPMePB3bLlYu8ashQ1nR7DFZ49dSua5RcpgHy//QWGu3rZwAlusA==:1000:jv1rXRa/y3aljOEBSSPoqklzl6W9E69nS8PS8f2a0S+jNTcpFSWStnFbKv4f/LVUIZhwlJFHxrYwGGoe/LOvp2VPwrGX3/cIggN8azaOq3f1f7W8+FLIRYuD/tAtwEmvgwfcrET6N9Woml0AXhwW2gjEDVmQsdyAKkmhUVW1Kpkf5lwHS4nZh08vJlpinQJ84+uTes1nV4qckJ7KnXBb5g==")
-	tk.FastClient.Jar.Set("_pxde", "35d633d0400e6bc8dac1f89f6c6e50794a4cf0572ce285813db62d9987b8664b:eyJ0aW1lc3RhbXAiOjE2MzIyMDg0Njk0NjIsImZfa2IiOjAsImlwY19pZCI6W119")
-	tk.FastClient.Jar.Set("_pxhd", "C-zTux/2qX6DYhsbEipAl09fPxk-VumZUy60iHQ8e0cxBJQUN4/vbVxKE6FyTf-CjGP5wOOZVRpPhzFOFCt6Vg==:qq6yK87gPoB4TgcY0q8LEKy6pYoi5DC6WSW/5L665ldIqYskbDbhMfZlAykQIJpTlsXJr5eqBITk67WPr0xKavOUM5J9rXhH5RCvjXWdriE=")
-	tk.FastClient.Jar.Set("_pxvid", "89c746ed-1aab-11ec-8e79-47616d49756d")
-
-	tk.px.Response = res.Body
+	tk.FastClient.Jar.Set(cookie.Name, cookie.Value)
 
 	tk.px.RSC++
+	//panic("")
 }
 
 func (tk *Task) PXEvent(){
@@ -127,7 +154,7 @@ func (tk *Task) PXEvent(){
 		Site:           perimeterx.SITE_WALMART,
 		Type:           perimeterx.PXType_EVENT,
 		Cookie:         string(tk.FastClient.Jar.PeekValue("_px3")),
-		ResponseObject: tk.px.Response,
+		ResponseObject: nil,
 		Token:          "",
 		RSC:            tk.px.RSC,
 		Uuid: tk.pxuuid,
@@ -142,7 +169,7 @@ func (tk *Task) PXEvent(){
 
 	//add event struct
 
-	req, err := tk.NewRequest("POST", "https://collector-pxu6b0qd2s.px-cloud.net/api/v2/collector", []byte(fmt.Sprintf(`payload=%s&appId=%s&tag=%s&uuid=%s&ft=%s&seq=%s&en=%s&cs=%s&pc=%s&sid=%s&vid=%s&pxhd=%s&cts=%s&rsc=%s`, eventstruct.Payload, eventstruct.AppID, eventstruct.Tag, tk.pxuuid, eventstruct.Ft, "3", eventstruct.En, eventstruct.Cs, eventstruct.Pc, eventstruct.Sid, eventstruct.Vid,  string(tk.FastClient.Jar.PeekValue("_pxhd")), eventstruct.Cts, "4")))
+	req, err := tk.NewRequest("POST", "https://collector-pxu6b0qd2s.px-cloud.net/api/v2/collector", []byte(fmt.Sprintf(`payload=%s&appId=%s&tag=%s&uuid=%s&ft=%s&seq=%s&en=%s&cs=%s&pc=%s&sid=%s&vid=%s&pxhd=%s&cts=%s&rsc=%s`, eventstruct.Payload, eventstruct.AppID, eventstruct.Tag, tk.pxuuid, eventstruct.Ft, "3", eventstruct.En, tk.px.Cs, eventstruct.Pc, tk.px.Sid, tk.px.Vid,  string(tk.FastClient.Jar.PeekValue("_pxhd")), tk.px.Cts, "4")))
 	if err != nil {
 		tk.SetStatus(module.STATUS_ERROR, "could not get create px event post")
 		tk.Stop()
@@ -164,8 +191,9 @@ func (tk *Task) PXEvent(){
 	}
 
 	log.Info("event px",  cookie.Value)
-	tk.FastClient.Jar.Set("_px3", cookie.Value)
-	tk.px.Response = res.Body
+	if cookie.Value != ""{
+		tk.FastClient.Jar.Set("_px3", cookie.Value)
+	}
 
 	tk.px.RSC++
 }

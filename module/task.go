@@ -35,7 +35,10 @@ type Task struct {
 	pxuuid string
 
 	px struct {
-		Response []byte
+		Sid string
+		Vid string
+		Cts string
+		Cs string
 		RSC      int32
 	}
 
@@ -70,16 +73,27 @@ func (tk *Task) OnStopping() {
 
 func (tk *Task) Flow() {
 	funcarr := []func(){
-		tk.Preload,
-		tk.MonitorProd,
-		tk.accountlock.Lock,
-		tk.ATC,
-		tk.CreateDelivery,
-		tk.SetFulfillment,
+		tk.Homepage,
 		tk.PXInit,
+		tk.PXEvent,
+		tk.CreateAcc,
+		tk.PXEvent,
+		tk.GetCartIds,
+		tk.PXEvent,
+		tk.MonitorProd,
+		tk.PXEvent,
+		tk.ATC,
+		tk.PXEvent,
+		tk.CreateDelivery,
+		tk.PXEvent,
+		tk.SetFulfillment,
+		tk.PXEvent,
 		tk.CreateContract,
+		tk.PXEvent,
 		tk.CreateCreditCart,
+		tk.PXEvent,
 		tk.UpdateTenderPlan,
+		tk.PXEvent,
 		tk.PlaceOrder,
 	}
 

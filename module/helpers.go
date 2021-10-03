@@ -39,12 +39,12 @@ func (tk *Task) FormatStores() string {
 
 func (tk *Task) GenerateDefaultHeaders(referrer string) http.Headers {
 	return http.Headers{
-		`user-agent`:       {"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36"},
+		`user-agent`:       {"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36"},
 		`accept`:           {`application/json`},
 		`accept-encoding`:  {`gzip, deflate, br`},
 		`accept-language`:  {`en-us`},
 		`content-type`:     {`application/x-www-form-urlencoded; charset=UTF-8`},
-		`sec-ch-ua`:        {`"Chromium";v="91", " Not A;Brand";v="99", "Google Chrome";v="91"`},
+		`sec-ch-ua`:        {`"Chromium";v="94", " Not A;Brand";v="99", "Google Chrome";v="94"`},
 		`sec-ch-ua-mobile`: {`?0`},
 		`Sec-Fetch-Site`:   {`same-site`},
 		`Sec-Fetch-Dest`:   {`empty`},

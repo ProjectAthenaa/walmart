@@ -41,22 +41,6 @@ var (
 	tenderPlanRe = regexp.MustCompile(`"tenderPlanId":"([\w-]+)"`)
 )
 
-func (tk *Task) Preload(){
-	go func(){
-		tk.accountlock.Lock()
-		for _, sf := range []func(){
-			tk.Homepage,
-			tk.CreateAcc,
-			tk.PXInit,
-			tk.GetCartIds,
-		}{
-			sf()
-		}
-		tk.accountlock.Unlock()
-		return
-	}()
-}
-
 func (tk *Task) MonitorProd(){
 	pubsub, err := frame.SubscribeToChannel(tk.Data.Channels.MonitorChannel)
 	if err != nil {
@@ -310,11 +294,6 @@ func (tk *Task) GetPIEVals(){
 }
 
 func (tk *Task) CreateCreditCart(){
-	tk.FastClient.Jar.Set("_px3", "e28c217b1fa38484bc0e7165780692a026998ef21ffbae90943534fb30db402a:jXFO8HKSgJW7yOEUbC1WXsEQmeH0deAzXfcmlH8eRS3vbv3t50oJm9B8+iphoC+ZZdITnRpQxXNJPLB31YomAw==:1000:GZMuGbliR5GbSmf0JE2LzOLwf8HrIGxfA7Q3bJiJauca/biXd1hWX38Z1uj+3Ym1G3ajhT//eyZXMQMPu+MOdNldgOSiZWyAs/pEa4jvGFNGfxxAhCmkQNLoBeEJf+7XqI3YEP2+uytwUJq0teekwrhmTTiBb2Jp+izJKQV2g8HsQIbiaASR3QhkSwYuAiybr2Jealr+EuprKZXIlp4aBw==")
-	tk.FastClient.Jar.Set("_pxde", "19158dec22447fdb6660ccfbd8f9068362d69cd6153a4a5dcdec7bae50d44f5f:eyJ0aW1lc3RhbXAiOjE2MzIyMDg1NDI3NTUsImZfa2IiOjAsImlwY19pZCI6W119")
-	tk.FastClient.Jar.Set("_pxhd", "-4zZROVV6HFhOthekXtaB-zy9brhuyzR6qE9o4gu6gKLRRJkfXRM5PLH3TAIVos0fobLOxiJ5j/17UMpxt02HA==:n1iTRLhdBtcBkzskPpejWYNvonIhHDacG6RHfqyhwxUaEvaM5qMvY6hBQuPdapoRc5k4v1n09Qibxcn77/EtJlud8KtDJg4G27sNm2x/yKM=")
-	tk.FastClient.Jar.Set("_pxvid", "b6fa46db-1aab-11ec-b27a-6c486e4a6649")
-
 	tk.SetStatus(module.STATUS_SUBMITTING_PAYMENT)
 	tk.GetPIEVals()
 	encarr := encryption.ProtectPANandCVV(tk.Data.Profile.Billing.Number, tk.Data.Profile.Billing.CVV, 1, tk.PIE)
