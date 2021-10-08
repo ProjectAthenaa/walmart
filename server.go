@@ -14,5 +14,5 @@ func init() {
 }
 
 func main() {
-	core.RegisterModuleServer(config.Module.Name, &module.Server{})
+	core.ListenAndServe(config.Module.Name, &module.Server{})
 }
