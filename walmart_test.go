@@ -42,10 +42,10 @@ func TestModule(t *testing.T) {
 
 	productlink := "570251169"
 
-	//username := "1moewci2"
-	//password := "4k7cvljz"
-	//ip := "178.159.147.248"
-	//port := "65112"
+	//username := "LT7LF"
+	//password := "H7Y0HUZP"
+	//ip := "64.29.84.253"
+	//port := "5564"
 
 	ip := "localhost"
 	port := "8866"
