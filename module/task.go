@@ -68,6 +68,7 @@ func (tk *Task) OnPause() error {
 }
 func (tk *Task) OnStopping() {
 	tk.FastClient.Destroy()
+	panic("")
 	return
 }
 
@@ -80,8 +81,6 @@ func (tk *Task) Flow() {
 		tk.PXEvent,
 		tk.GetCartIds,
 		tk.PXEvent,
-		//tk.MonitorProd,
-		//tk.PXEvent,
 		tk.ATC,
 		tk.PXEvent,
 		tk.CreateDelivery,
